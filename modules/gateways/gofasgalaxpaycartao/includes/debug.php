@@ -14,7 +14,7 @@ if(!defined('WHMCS')){ die(); }
 if($debug){
 	echo'<pre style="height:300px;max-width: 850px;margin: 20px auto;padding: 5px 15px 5px 15px;" class="debug">';
 	echo'<h4 style="text-align:center;line-height: 1.4;border-bottom: 1px solid black;padding: 0px 0px 12px 0px;margin: 11px 0px 20px 0px;">Se você está lendo isso é por que a opção "<i>debug</i>" do módulo <br><b style="text-decorationunderline;">Gofas Boleto Fácil para WHMCS versão '.$module_version.' está ativa.</b></h4>';
-	echo'<p">Para obter ajuda consulte o <a href="https://gofas.net/foruns/?rf=ggpviewinvoice" target="_blank">fórum mantido pelos usuários</a>.<br>Se não encontrar nenhum tópico relacionado ao seu caso:</p>';
+	echo'<p">Para obter ajuda consulte o <a href="https://gofas.net/foruns/?rf=ggpcviewinvoice" target="_blank">fórum mantido pelos usuários</a>.<br>Se não encontrar nenhum tópico relacionado ao seu caso:</p>';
 	echo'<p  onfocus="select_all_and_copy(debugDiv)" onclick="select_all_and_copy(debugDiv)"">1) <span style="cursor:copy;text-decoration: underline; ">Clique aqui para copiar as informações de diagnóstico (debug)</span>.</p>';
 	echo'<p>2) <a target="_blank" tyle="cursor:alias;" href="https://gofas.net/foruns/">Clique aqui para publicar no fórum do módulo as informações de diagnósico</a>.</p>';
 }

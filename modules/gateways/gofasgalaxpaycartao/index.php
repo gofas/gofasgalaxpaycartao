@@ -9,21 +9,25 @@
  */
 use WHMCS\Database\Capsule;
 require __DIR__.'/includes/hooks.php';
-require_once __DIR__.'/includes/configuration.php';
-function gofasgalaxpaycard_3dsecure($params){
+require_once __DIR__.'/includes/config.php';
+function gofasgalaxpaycartao_3dsecure($params){
 	define('CLIENTAREA', true);
 	require __DIR__.'/includes/functions.php';		
 	require __DIR__.'/includes/params.php';
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpwhmcsurl') -> get( array( 'value','created_at') ) as $ggpwhmcsurl_ ){
-		$ggpwhmcsurl					= $ggpwhmcsurl_->value;
-		$ggpwhmcsurl_created_at			= $ggpwhmcsurl_->created_at;
+	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
+		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
+		$ggpcwhmcsurl_created_at			= $ggpcwhmcsurl_->created_at;
 	}
-    $url = $ggpwhmcsurl.'/modules/gateways/gofasgalaxpay/includes/iframe.php';
+    $url = $ggpcwhmcsurl.'/modules/gateways/gofasgalaxpaycartao/includes/iframe.php';
 	if( $params['amount'] >= $params['minimunamount']){
+		$token = ggpc_get_token($galax_id,$galax_hash);
+		echo '<pre style="height:250px;">token:', print_r($token);
+		//echo 'Postfields:', print_r($postfields);
+		echo '</pre>';
 		 $Params = json_decode( json_encode($params), true);
 		 $pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
 		 if($pay_method_id){
-			foreach( Capsule::table('gofasgalaxpay') -> where('pay_method_id', '=', $pay_method_id) -> where('user_id', '=', $params['clientdetails']['id']) ->
+			foreach( Capsule::table('gofasgalaxpaycartao') -> where('pay_method_id', '=', $pay_method_id) -> where('user_id', '=', $params['clientdetails']['id']) ->
 				get( array( 'credit_card_id','api_mode') ) as $stored_card ){
 				$credit_card_id_api_mode		= $stored_card->api_mode;
 				if((string)$api_mode === (string)$credit_card_id_api_mode){
@@ -78,28 +82,32 @@ function gofasgalaxpaycard_3dsecure($params){
 			$htmlOutput .= '<input type="hidden" name="error" id="error" value="" />';
     		$htmlOutput .= '</form>';
 			if($params['sandbox']){
-				$htmlOutput .= '<script type="text/javascript" src="https://sandbox.boletobancario.com/boletofacil/wro/direct-checkout.min.js"></script>';
-				$trueOrFalse = 'false';
+				$htmlOutput .= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
+				$environment = 'false';
 			}
 			elseif(!$params['sandbox']){
-				$htmlOutput .= '<script type="text/javascript" src="https://www.boletobancario.com/boletofacil/wro/direct-checkout.min.js"></script>';
-				$trueOrFalse = 'true';
+				$htmlOutput .= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
+				$environment = 'true';
 			}
 			if(!$credit_card_id){
 				$htmlOutput .=  '<script type="text/javascript">
-  			var checkout = new DirectCheckout("'.$public_token.'", '.$trueOrFalse.'); /* Em sandbox utilizar o construtor new DirectCheckout("SEU TOKEN PUBLICO", false); */
-  			var cardData = {
-      			cardNumber: "'.$params['cardnum'].'",
-      			holderName: "'.$customer['name'].'",
-      			securityCode: "'.$params['cccvv'].'",
-      			expirationMonth: "'.substr($params['cardexp'], 0, 2).'",
-      			expirationYear: "20'.substr($params['cardexp'], 2, 2).'",
-  			};
-			checkout.getCardHash(cardData, function(cardHash){
-				document.getElementById("cardHash").value = cardHash;
-			}, function(error){
-				document.getElementById("error").value = error;
-			});</script>';
+				const token = "'.$public_token.'";
+				var galaxPay = new GalaxPay(token, '.$environment.');
+
+				const card = galaxPay.newCard({
+					number: "'.$params['cardnum'].'",
+					holder: "'.$customer['name'].'",
+					expiresAt: "20'.substr($params['cardexp'], 2, 2).'-'.substr($params['cardexp'], 0, 2).'",
+					cvv: "'.$params['cccvv'].'"
+				});
+				galaxPay.hashCreditCard(card, function(hash) {
+					document.getElementById("cardHash").value = hash;
+					console.log(hash);
+				}, function (error) {
+					document.getElementById("error").value = error;
+					console.log(error);
+				});
+			</script>';
 			}
 			$htmlOutput .= '<script type="text/javascript">
 				document.getElementById("storeCard").value = sessionStorage.getItem("nostore");
@@ -111,10 +119,10 @@ function gofasgalaxpaycard_3dsecure($params){
 	}
 	elseif( $params['amount'] < $params['minimunamount']){
 		$error .= 'O valor mínimo para utilizar esse método de pagamento é '.number_format( $params['minimunamount'] ,  2, ',', '.').'.';
-		$error .= '<br><a target="_top" style="color: #a94442;" href="'.$ggpwhmcsurl.'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
-		$invoice_page =json_encode($ggpwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
+		$error .= '<br><a target="_top" style="color: #a94442;" href="'.$ggpcwhmcsurl.'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
+		$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
 		$error .= '<script>
-		function ggp_redir_to_invoice(){
+		function ggpc_redir_to_invoice(){
 			window.top.location.href='.$invoice_page.'
 		}
 		</script>';
@@ -125,17 +133,17 @@ function gofasgalaxpaycard_3dsecure($params){
 		return $htmlOutput;
 	}
 }
-function gofasgalaxpaycard_capture($params){
+function gofasgalaxpaycartao_capture($params){
 	require __DIR__.'/includes/params.php';
 	require __DIR__.'/includes/functions.php';
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpwhmcsurl') -> get( array( 'value','created_at') ) as $ggpwhmcsurl_ ){
-		$ggpwhmcsurl					= $ggpwhmcsurl_->value;
+	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
+		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
 	$Params = json_decode( json_encode($params), true);
 	
 	if($Params['payMethod']['payment']['pay_method_id']){
 		 $pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
-		foreach( Capsule::table('gofasgalaxpay')->
+		foreach( Capsule::table('gofasgalaxpaycartao')->
 			where('pay_method_id', '=', $pay_method_id)->
 			where('user_id', '=', $params['clientdetails']['id'])->
 			get( array( 'credit_card_id','api_mode') ) as $stored_card ){
@@ -163,9 +171,9 @@ function gofasgalaxpaycard_capture($params){
 		$address_complement = false;
 	}
 	$postfields = array(
-		'token'=> $token,
+		'token'=> $galax_id,
 		'description'=> substr( implode("\n",$line_items),  0, 400),
-		'referralToken'=>$toKenrApearysikOpal,
+		'referralToken'=>$referralToken,
 		'reference'=> $params['invoiceid'],
 		'amount' => $params['amount'],
 		'payerName' => urldecode($customer['name']),
@@ -178,14 +186,14 @@ function gofasgalaxpaycard_capture($params){
 		'billingAddressCity'=>urldecode($params['clientdetails']['city']),
 		'billingAddressState'=>urldecode($params['clientdetails']['state']),
 		'billingAddressPostcode'=>urldecode($params['clientdetails']['postcode']),
-		'notificationUrl' => $ggpwhmcsurl.'/modules/gateways/gofasgalaxpay/includes/callback.php', //$_POST['returnurl'],
+		'notificationUrl' => $ggpcwhmcsurl.'/modules/gateways/gofasgalaxpaycartao/includes/callback.php', //$_POST['returnurl'],
 		'responseType' => 'json',
 		'paymentTypes' => 'credit_card',
 		'notifyPayer' => false,
 		'creditCardId'=> $credit_card_id,
 		'paymentAdvance'=>$paymentadvance,
 	);
-	$charge_ = ggp_charge($charge_url,$postfields);
+	$charge_ = ggpc_charge($charge_url,$postfields);
 	$charge = json_decode( json_encode($charge_), true);
 	if( $charge['result']['errorMessage']){
 		$error .= $charge['result']['errorMessage'];
@@ -198,12 +206,12 @@ function gofasgalaxpaycard_capture($params){
 	}
 
 	if($params['log']){
-		logModuleCall('gofasgalaxpay', 'capture_payment', array('module_version'=>'1.4.0','pay_method_id'=>$pay_method_id, 'params'=> $Params), 'post',  array('postfields'=>$postfields,'charge'=>$charge), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'capture_payment', array('module_version'=>'1.4.0','pay_method_id'=>$pay_method_id, 'params'=> $Params), 'post',  array('postfields'=>$postfields,'charge'=>$charge), 'replaceVars');
 	}
 	if(!$error and (string)$charge['result']['data']['charges']['0']['payments']['0']['status'] === (string)'CONFIRMED'){
 		return array(
                     'status' => 'success',
-                    'transid' => 'ggp-'.$charge['result']['data']['charges']['0']['code'].'-'.$api_mode.'-'.$charge['result']['data']['charges']['0']['payments']['0']['id'].'.',
+                    'transid' => 'ggpcc-'.$charge['result']['data']['charges']['0']['code'].'-'.$api_mode.'-'.$charge['result']['data']['charges']['0']['payments']['0']['id'].'.',
 					'fee' => $charge['result']['data']['charges']['0']['payments']['0']['fee'],
 					'gatewayid' => NULL,
 					'rawdata' => $charge
@@ -223,19 +231,19 @@ function gofasgalaxpaycard_capture($params){
          );
 	}
 }
-function gofasgalaxpaycard_refund($params){
+function gofasgalaxpaycartao_refund($params){
     require_once __DIR__.'/includes/params.php';
 	require_once __DIR__.'/includes/functions.php';
 	if($params['sandbox']){
-		$refund_url='https://sandbox.boletobancario.com/boletofacil/integration/api/v1/refund-credit-card-payment';
+		$refund_url='https://api.sandbox.cloud.galaxpay.com.br/v2/charges/';
 		$api_mode = 'sandbox';
 	}
 	elseif(!$params['sandbox']){
-		$refund_url='https://www.boletobancario.com/boletofacil/integration/api/v1/refund-credit-card-payment';
+		$refund_url='https://api.galaxpay.com.br/v2/charges/';
 		$api_mode = 'live';
 	}
-	if( !function_exists('ggp_get_string_between') ){
-	function ggp_get_string_between($string, $start, $end){
+	if( !function_exists('ggpc_get_string_between') ){
+	function ggpc_get_string_between($string, $start, $end){
 		$string = " ".$string;
 		$ini = strpos($string,$start);
 		if($ini == 0) return "";
@@ -243,9 +251,9 @@ function gofasgalaxpaycard_refund($params){
 		$len = strpos($string,$end,$ini) - $ini;
 		return substr($string,$ini,$len);
 	}}
-	$trans_id = ggp_get_string_between($params['transid'], $api_mode.'-', '.');
-	$trans_code = ggp_get_string_between($params['transid'], 'ggp-', '-'.$api_mode);
-	$refund_= ggp_charge($refund_url,array('token'=> $token,'id'=>  $trans_id,));	
+	$trans_id = ggpc_get_string_between($params['transid'], $api_mode.'-', '.');
+	$trans_code = ggpc_get_string_between($params['transid'], 'ggpcc-', '-'.$api_mode);
+	$refund_= ggpc_charge($refund_url,array('token'=> $galax_id,'id'=>  $trans_id,));	
 	$refund = json_decode( json_encode($refund_), true);
 	$GetTransactions = localAPI('GetTransactions',array('transid' => $params['transid']), (int)$params['admin']);
 	$dt = new DateTime($GetTransactions['transactions']['transaction']['0']['date']);
@@ -258,7 +266,7 @@ function gofasgalaxpaycard_refund($params){
 		$fee = NULL;
 	}
 	if($params['log']){
-		logModuleCall('gofasgalaxpay', 'refund_payment', array('module_version'=>'1.4.0','GetTransactions'=>$GetTransactions), 'post',  array('postfields'=>array('token'=> $token,'id'=>  $trans_id,),'refund'=>$refund), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'refund_payment', array('module_version'=>'1.4.0','GetTransactions'=>$GetTransactions), 'post',  array('postfields'=>array('token'=> $galax_id,'id'=>  $trans_id,),'refund'=>$refund), 'replaceVars');
 	}
 	if($refund['result']['errorMessage']){
 		return array(
@@ -270,7 +278,7 @@ function gofasgalaxpaycard_refund($params){
 	    return array(
         	'status' => 'success',
         	'rawdata' => $refund,
-        	'transid' => 'ggp-'.$trans_code.'-'.$api_mode.'-refund-'.$trans_id,
+        	'transid' => 'ggpcc-'.$trans_code.'-'.$api_mode.'-refund-'.$trans_id,
         	'fee' => $fee,
     	);
 	}

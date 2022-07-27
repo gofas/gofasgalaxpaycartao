@@ -1,11 +1,11 @@
 <?php
 /**
- * Módulo Juno Cartão para WHMCS
- * @copyright	2020 Gofas Software
- * @see			https://gofas.net/?p=12042
+ * Módulo Galax Pay Cartão para WHMCS
+ * @copyright	2022 Gofas Software
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.3.0
+ * @version		0.1.0
  */
 if (!defined('WHMCS')){
     die();
@@ -103,17 +103,18 @@ if (!$cpf and !$cnpj){
     $customer['doc_type'] = NULL;
     $customer['document'] = NULL;
 }
+$public_token = $params['public_token'];
 if ($params['sandbox']){
     $api_mode = 'sandbox';
-    $token = $params['sandbox_token'];
-    $public_token = $params['sandbox_public_token'];
-    $charge_url = 'https://sandbox.boletobancario.com/boletofacil/integration/api/v1/issue-charge';
-    $toKenrApearysikOpal = 'D6534FBF56FDAE78FABEA6D423DF7966331F142A711DAD4E183087A60F586BD128D4433E56E52671';
+    $galax_id = $params['sandbox_galax_id'];
+    $galax_hash = $params['sandbox_galax_hash'];
+    $charge_url = 'https://api.sandbox.cloud.galaxpay.com.br/v2';
+    $referralToken = '34c8f0bb';
 }
 elseif (!$params['sandbox']){
     $api_mode = 'live';
-    $token = $params['token'];
-    $public_token = $params['public_token'];
-    $charge_url = 'https://www.boletobancario.com/boletofacil/integration/api/v1/issue-charge';
-    $toKenrApearysikOpal = 'DE1836BFE5AD353FE74E38F767A3F280ED4A6A443C22895B31D90FA148C9A73EC1E6346B29319A98';
+    $galax_id = $params['galax_id'];
+    $galax_hash = $params['galax_hash'];
+    $charge_url = 'https://api.galaxpay.com.br/v2';
+    $referralToken = '34c8f0bb';
 }

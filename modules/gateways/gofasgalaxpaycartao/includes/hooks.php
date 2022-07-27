@@ -8,9 +8,9 @@
  * @version		1.3.0
  */
 add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
-	$params = getGatewayVariables('gofasgalaxpay');
+	$params = getGatewayVariables('gofasgalaxpaycartao');
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
-		$params = getGatewayVariables('gofasgalaxpay');
+		$params = getGatewayVariables('gofasgalaxpaycartao');
 		$vars_ = json_decode(json_encode($vars));
 		//echo '<pre style="height: 250px;">',print_r($vars_),'</pre>';
 		if($params['minimunamountinstallments']){
@@ -48,21 +48,21 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 		else {
 			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
 		}
-		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasgalaxpay/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
+		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasgalaxpaycartao/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
 	//echo '<pre style="height: 200px;">',print_r($vars),'</pre>';
 	return array(
 		'allowClientsToRemoveCards'=>false,
-		//'templatefile'=>'../../modules/gateways/gofasgalaxpay/templates/invoice-payment',
+		//'templatefile'=>'../../modules/gateways/gofasgalaxpaycartao/templates/invoice-payment',
 	);
 	
 });
 add_hook('ClientAreaPageCart', 1, function($vars){
-	$params = getGatewayVariables('gofasgalaxpay');
+	$params = getGatewayVariables('gofasgalaxpaycartao');
 	if( stripos($_SERVER['REQUEST_URI'], 'cart.php?a=checkout')){
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
-		$params = getGatewayVariables('gofasgalaxpay');
+		$params = getGatewayVariables('gofasgalaxpaycartao');
 		$vars_ = json_decode(json_encode($vars));
 		if($params['minimunamountinstallments']){
 			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
@@ -99,7 +99,7 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 		else {
 			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
 		}
-		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasgalaxpay/assets/js/ClientAreaPageCart.js?v='.time().'"></script>';
+		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasgalaxpaycartao/assets/js/ClientAreaPageCart.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
 	 }

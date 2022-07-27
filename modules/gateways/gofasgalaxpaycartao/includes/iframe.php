@@ -1,46 +1,49 @@
 <?php
 /**
- * Módulo Juno Cartão para WHMCS
- * @copyright	2020 Gofas Software
- * @see			https://gofas.net/?p=12042
+ * Módulo Galax Pay Cartão para WHMCS
+ * @copyright	2022 Gofas Software
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.4.0
+ * @version		0.1.0
  */
 // Require libraries needed for gateway module functions.
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 use WHMCS\Database\Capsule;
-$params	= getGatewayVariables('gofasgalaxpay');
+$params	= getGatewayVariables('gofasgalaxpaycartao');
 
 $errormessage = str_replace("INVOICEID", $_POST['invoiceid'], html_entity_decode($params['errormessage']));
 
 if($_POST and !$_POST['error'] ){
 	//echo 'Processando o pagamento...';
 	require __DIR__.'/functions.php';
+	$public_token = $params['public_token'];
 	if($params['sandbox']){
-		$token				= $params['sandbox_token'];
-		$public_token		= $params['sandbox_public_token'];
-		$toKenrApearysikOpal='D6534FBF56FDAE78FABEA6D423DF7966331F142A711DAD4E183087A60F586BD128D4433E56E52671';
-		$charge_url			='https://sandbox.boletobancario.com/boletofacil/integration/api/v1/issue-charge';
+		$api_mode = 'sandbox';
+		$galax_id = $params['sandbox_galax_id'];
+		$galax_hash = $params['sandbox_galax_hash'];
+		$charge_url = 'https://api.sandbox.cloud.galaxpay.com.br/v2';
 		$sandbox			= true;
-		$api_mode			= 'sandbox';
-		$javascript			= '<script type="text/javascript" src="https://sandbox.boletobancario.com/boletofacil/wro/direct-checkout.min.js"></script>';
+		$javascript			= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 	}
 	elseif(!$params['sandbox']){
-		$token				= $params['token'];
-		$public_token		= $params['public_token'];
-		$toKenrApearysikOpal='DE1836BFE5AD353FE74E38F767A3F280ED4A6A443C22895B31D90FA148C9A73EC1E6346B29319A98';
-		$charge_url			='https://www.boletobancario.com/boletofacil/integration/api/v1/issue-charge';
+		$api_mode = 'live';
+    	$galax_id = $params['galax_id'];
+    	$galax_hash = $params['galax_hash'];
+    	$charge_url = 'https://api.galaxpay.com.br/v2';
 		$sandbox			= false;
-		$api_mode			= 'live';
-		$javascript			= '<script type="text/javascript" src="https://www.boletobancario.com/boletofacil/wro/direct-checkout.min.js"></script>';
+		$javascript			= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 	}
 
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpwhmcsurl') -> get( array( 'value','created_at') ) as $ggpwhmcsurl_ ){
-		$ggpwhmcsurl					= $ggpwhmcsurl_->value;
+	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
+		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
+	$token = ggpc_get_token($galax_id,$galax_hash);
+		echo '<pre style="height:250px;">token:', print_r($token);
+		//echo 'Postfields:', print_r($postfields);
+		echo '</pre>';
 	// Invoice Info
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$_POST['invoiceid'] ),(int)$params['admin']);
 	$line_items = array();
@@ -68,9 +71,9 @@ if($_POST and !$_POST['error'] ){
 		$paymentadvance = false;
 	}
 	$postfields_ = array(
-		'token'=> $token,
+		'token'=> $galax_id,
 		'description'=> substr( implode("\n",$line_items),  0, 400),
-		'referralToken'=>$toKenrApearysikOpal,
+		'referralToken'=>$referralToken,
 		'reference'=> $_POST['invoiceid'],
 		'payerName' => urldecode($_POST['payerName']),
 		'payerEmail'=>urldecode($_POST['email']),
@@ -82,7 +85,7 @@ if($_POST and !$_POST['error'] ){
 		'billingAddressCity'=>urldecode($_POST['city']),
 		'billingAddressState'=>urldecode($_POST['state']),
 		'billingAddressPostcode'=>urldecode($_POST['postcode']),
-		'notificationUrl' => $ggpwhmcsurl . '/modules/gateways/gofasgalaxpay/includes/callback.php', //$_POST['returnurl'],
+		'notificationUrl' => $ggpcwhmcsurl . '/modules/gateways/gofasgalaxpaycartao/includes/callback.php', //$_POST['returnurl'],
 		'responseType' => 'json',
 		'paymentTypes' => 'credit_card',
 		'notifyPayer' => false,
@@ -92,7 +95,7 @@ if($_POST and !$_POST['error'] ){
 		'paymentAdvance'=>$paymentadvance,
 	);
 	$postfields = array_merge($postfields_,$postfields_amount);
-	$charge_ = ggp_charge($charge_url,$postfields);
+	$charge_ = ggpc_charge($charge_url,$postfields);
 	$charge = json_decode( json_encode($charge_), true);
 	if( (string)$charge['result']['data']['charges']['0']['payments']['0']['status'] === (string)'CONFIRMED'){
 		if( (int)$_POST['installmentsnum'] > 1 ){
@@ -101,16 +104,16 @@ if($_POST and !$_POST['error'] ){
 		else {
 			$trans_desc = "Pagamento Aprovado - ".$_POST['cardtype'].'-'.$_POST['cclastfour'];
 		}
-		$ggp_add_trans = ggp_add_trans(
+		$ggpc_add_trans = ggpc_add_trans(
 			$_POST['userid'],
 			$_POST['invoiceid'],
 			$_POST['amount'],
 			$charge['result']['data']['charges']['0']['payments']['0']['fee'] * $_POST['installmentsnum'],
-			'ggp-'.$charge['result']['data']['charges']['0']['code'].'-'.$api_mode.'-'.$charge['result']['data']['charges']['0']['payments']['0']['id'].'.',
+			'ggpcc-'.$charge['result']['data']['charges']['0']['code'].'-'.$api_mode.'-'.$charge['result']['data']['charges']['0']['payments']['0']['id'].'.',
 			$trans_desc
 			);	
-		if($ggp_add_trans['error']){
-			$error .= $ggp_add_trans['error'];
+		if($ggpc_add_trans['error']){
+			$error .= $ggpc_add_trans['error'];
 		}
 	}
 	if( $charge['result']['errorMessage']){
@@ -133,7 +136,7 @@ if($_POST and !$_POST['error'] ){
 		try {
 			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
                 $_POST['userid'],
-                'gofasgalaxpay',
+                'gofasgalaxpaycartao',
                 '000000000'.$_POST['cclastfour'],
                 $_POST['cardexp'],
                 $_POST['cardtype'],
@@ -147,7 +150,7 @@ if($_POST and !$_POST['error'] ){
         }
 		//
 		try {
-			Capsule::table('gofasgalaxpay')->insert(
+			Capsule::table('gofasgalaxpaycartao')->insert(
 				array(
 					'user_id' => $_POST['userid'],
 					'credit_card_id'=>$charge['result']['data']['charges']['0']['payments']['0']['creditCardId'],
@@ -188,20 +191,20 @@ elseif($_POST['error']){
 }
 if(!$error){
 	if($params['log']){
-		logModuleCall('gofasgalaxpay', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields,), 'post',  array('charge'=>$charge, 'charge_payments'=>$charge_payments,'charge_payments_'=>$charge_payments_, "$AddPayMethod"=>$AddPayMethod), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields,), 'post',  array('charge'=>$charge, 'charge_payments'=>$charge_payments,'charge_payments_'=>$charge_payments_, "$AddPayMethod"=>$AddPayMethod), 'replaceVars');
 	}
-	$invoice_page =json_encode($ggpwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
-	echo '<script>window.top.location.href='.$invoice_page.'</script>';
+	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
+	//echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
 if($error and !$params['onlycustomerrormessage']){
 	echo '<div style="background-color: #f2dede; border-color: #ebccd1; padding: 15px 15px 22px 15px; border-radius: 3px; position: absolute;top: 0;width: 100%;font-size: 16px;color: #a94442;text-align: center;font-family: Verdana, Thaoma, SANS-SERIF;line-height: 30px;">'.$error.'<br>'.$errormessage.'</div>';
 	if($params['log']){
-		logModuleCall('gofasgalaxpay', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
 	}
 }
 if($error and $params['onlycustomerrormessage']){
 	echo '<div style="background-color: #f2dede; border-color: #ebccd1; padding: 15px 15px 22px 15px; border-radius: 3px; position: absolute;top: 0;width: 100%;font-size: 16px;color: #a94442;text-align: center;font-family: Verdana, Thaoma, SANS-SERIF;line-height: 30px;">'.$errormessage.'</div>';
 	if($params['log']){
-		logModuleCall('gofasgalaxpay', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
 	}
 }
