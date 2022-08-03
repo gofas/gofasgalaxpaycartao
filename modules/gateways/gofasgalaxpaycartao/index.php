@@ -81,12 +81,11 @@ function gofasgalaxpaycartao_3dsecure($params){
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
 			$htmlOutput .= '<input type="hidden" name="error" id="error" value="" />';
     		$htmlOutput .= '</form>';
+			$htmlOutput .= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 			if($params['sandbox']){
-				$htmlOutput .= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 				$environment = 'false';
 			}
 			elseif(!$params['sandbox']){
-				$htmlOutput .= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 				$environment = 'true';
 			}
 			if(!$credit_card_id){

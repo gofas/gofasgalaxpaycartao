@@ -149,9 +149,7 @@ function gofasgalaxpaycartao_config(){
 			<div class="ggpc_separator" style="padding: 1px 15px 9px;">
 				<div style="width:158px; float: right; padding: 0px;">
 				<a target="_blank" href="https://gofas.net/ggpcc/"><img style=" width: 135px;margin: 0px 0px 15px 0px;" src="'.$whmcs_url.'/modules/gateways/gofasgalaxpaycartao/assets/img/gofas_software.png"></a>
-					
 				<a target="_blank" href="https://app.galaxpay.com.br/abrir-conta?affiliateHash=34c8f0bb"><img style=" width: 150px;" src="'.$whmcs_url.'/modules/gateways/gofasgalaxpaycartao/assets/img/galaxpay_logo.png"></a>
-
 				</div>
 				<div style="margin-left: 10px;">
 					<h4 style="padding-top: 5px;">Módulo Gofas Galax Pay - Cartão para WHMCS v'.$module_version.'</h4>
@@ -181,7 +179,13 @@ function gofasgalaxpaycartao_config(){
 			'Default' => '',
 			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax Hash</a>',
 		),
-		// Sandbox Secret Token
+		'public_token' => array(
+			'FriendlyName' => $opt_num++.'- Public Token<span class="ggpc_required">*</span>',
+			'Type' => 'text',
+			'Size' => '50',
+			'Default' => '',
+			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Obtenha em <a target="_blank" style="text-decoration:underline;" href="https://app.galaxpay.com.br/informacao-modulo/webservice/">configurações do módulo webservice</a>',
+		),
 		'separator_3' => array(
 			'Description' => '<h2>Credenciais API - Testes</h2>',
 		),
@@ -200,16 +204,16 @@ function gofasgalaxpaycartao_config(){
 			'Default' => '',
 			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax Hash</a>',
 		),
-		// All others settings
-		'separator_4' => array(
-			'Description' => '<h2>Configurações gerais</h2>',
-		),
-		'public_token' => array(
-			'FriendlyName' => $opt_num++.'- Public Token<span class="ggpc_required">*</span>',
+		'sandbox_public_token' => array(
+			'FriendlyName' => $opt_num++.'- Sandbox Public Token<span class="ggpc_required">*</span>',
 			'Type' => 'text',
 			'Size' => '50',
 			'Default' => '',
 			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Obtenha em <a target="_blank" style="text-decoration:underline;" href="https://app.galaxpay.com.br/informacao-modulo/webservice/">configurações do módulo webservice</a>',
+		),
+		// All others settings
+		'separator_4' => array(
+			'Description' => '<h2>Configurações gerais</h2>',
 		),
 		'admin' => array(
 			'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="ggpc_required">*</span>',
