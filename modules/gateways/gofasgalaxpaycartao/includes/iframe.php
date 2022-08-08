@@ -19,27 +19,27 @@ $errormessage = str_replace("INVOICEID", $_POST['invoiceid'], html_entity_decode
 if($_POST and !$_POST['error'] ){
 	//echo 'Processando o pagamento...';
 	require __DIR__.'/functions.php';
-	$public_token = $params['public_token'];
 	if($params['sandbox']){
 		$api_mode = 'sandbox';
 		$galax_id = $params['sandbox_galax_id'];
 		$galax_hash = $params['sandbox_galax_hash'];
+		$public_token = $params['sandbox_public_token'];
 		$charge_url = 'https://api.sandbox.cloud.galaxpay.com.br/v2';
 		$sandbox			= true;
-		$javascript			= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 	}
 	elseif(!$params['sandbox']){
 		$api_mode = 'live';
     	$galax_id = $params['galax_id'];
     	$galax_hash = $params['galax_hash'];
+		$public_token = $params['public_token'];
     	$charge_url = 'https://api.galaxpay.com.br/v2';
 		$sandbox			= false;
-		$javascript			= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 	}
 
 	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
 		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
+	echo '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
 	$token = ggpc_get_token($galax_id,$galax_hash);
 		echo '<pre style="height:250px;">token:', print_r($token);
 		//echo 'Postfields:', print_r($postfields);
