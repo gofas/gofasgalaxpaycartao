@@ -19,6 +19,8 @@ $errormessage = str_replace("INVOICEID", $_POST['invoiceid'], html_entity_decode
 if($_POST and !$_POST['error'] ){
 	//echo 'Processando o pagamento...';
 	require __DIR__.'/functions.php';
+	require __DIR__.'/params.php';
+	$customer = ggpc_customer($_POST['userid']);
 	if($params['sandbox']){
 		$api_mode = 'sandbox';
 		$galax_id = $params['sandbox_galax_id'];
@@ -39,11 +41,12 @@ if($_POST and !$_POST['error'] ){
 	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
 		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
-	echo '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
-	$token = ggpc_get_token($galax_id,$galax_hash);
-		echo '<pre style="height:250px;">token:', print_r($token);
+	$token = ggpc_get_token($galax_id,$galax_hash,$sandbox);
+	if($params['log']){
+		echo '<pre style="height:250px;">token:',print_r([$_POST,$token]);
 		//echo 'Postfields:', print_r($postfields);
 		echo '</pre>';
+	}
 	// Invoice Info
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$_POST['invoiceid'] ),(int)$params['admin']);
 	$line_items = array();
@@ -54,7 +57,7 @@ if($_POST and !$_POST['error'] ){
 	if( $_POST['storeCard'] === 'yes'){
 		$storecard = true;
 	}
-	elseif( $_POST['storeCard'] === 'no'){
+	if( $_POST['storeCard'] === 'no'){
 		$storecard = false;
 	}
 	
@@ -64,35 +67,44 @@ if($_POST and !$_POST['error'] ){
 	elseif( (int)$_POST['installmentsnum'] === 1 ){
 		$postfields_amount = array('amount' => $_POST['amount'],);
 	}
-	if($_POST['paymentadvance']){
-		$paymentadvance = true;
-	}
-	else {
-		$paymentadvance = false;
-	}
+	
 	$postfields_ = array(
-		'token'=> $galax_id,
-		'description'=> substr( implode("\n",$line_items),  0, 400),
-		'referralToken'=>$referralToken,
-		'reference'=> $_POST['invoiceid'],
-		'payerName' => urldecode($_POST['payerName']),
-		'payerEmail'=>urldecode($_POST['email']),
-		'payerCpfCnpj' => urldecode($_POST['payerCpfCnpj']),
-		'billingAddressStreet' => urldecode($_POST['address']),
-		'billingAddressNumber'=>urldecode($_POST['addressNumber']),
-		'billingAddressComplement'=>urldecode($_POST['addressComplement']),
-		'billingAddressNeighborhood'=>urldecode($_POST['neighborhood']),
-		'billingAddressCity'=>urldecode($_POST['city']),
-		'billingAddressState'=>urldecode($_POST['state']),
-		'billingAddressPostcode'=>urldecode($_POST['postcode']),
-		'notificationUrl' => $ggpcwhmcsurl . '/modules/gateways/gofasgalaxpaycartao/includes/callback.php', //$_POST['returnurl'],
-		'responseType' => 'json',
-		'paymentTypes' => 'credit_card',
-		'notifyPayer' => false,
-		'creditCardHash' => urldecode($_POST['cardHash']),//$creditCardHash,
+		'token'=> $token['response']['access_token'],
+		'charge'=> ['additionalInfo'=> substr( implode("\n",$line_items),  0, 400),
+			'myId'=> $_POST['invoiceid'],
+			'value' => $postfields_amount,
+			'payday'=>date("Y-m-d"),
+			'payedOutsideGalaxPay' => false,
+			'mainPaymentMethodId' => "creditcard",
+			'Customer' => [
+				'myId'=> $customer['id'],
+				'name'=> $customer['name'],
+        		'document'=> $customer['document'],
+        		'emails'=> [
+        	    	$customer['email'],
+        		],
+        		'phones'=> [
+        	    	$customer['phone'],
+        		],
+			],
+    		'PaymentMethodCreditCard'=> [
+    		    'Card'=> [
+    		        'myId'=> 'pay-62d75de8cf9d89.87917599',
+    		        'hash'=> 'ABCD-1234-EFGH-5678-ABCD-1234-EFGH-5678',
+    		        'number'=> '4111 1111 1111 1111',
+    		        'holder'=> 'JOAO J J DA SILVA',
+    		        'expiresAt'=> '2022-07',
+    		        'cvv'=> '363'
+    		    ],
+    		    'cardOperatorId'=> 'rede',
+    		    'preAuthorize'=> false,
+    		    'qtdInstallments'=> 12
+    		],
+		],
+		'notificationUrl' => $ggpcwhmcsurl . '/modules/gateways/gofasgalaxpaycartao/includes/callback.php',
+		'creditCardHash' => urldecode($_POST['cardHash']),
 		'creditCardStore' => $storecard,
 		'creditCardId'=> $_POST['credit_card_id'],
-		'paymentAdvance'=>$paymentadvance,
 	);
 	$postfields = array_merge($postfields_,$postfields_amount);
 	$charge_ = ggpc_charge($charge_url,$postfields);

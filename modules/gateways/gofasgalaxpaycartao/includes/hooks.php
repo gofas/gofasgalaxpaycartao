@@ -1,11 +1,11 @@
 <?php
 /**
- * Módulo Juno Cartão para WHMCS
- * @copyright	2020 Gofas Software
- * @see			https://gofas.net/?p=12042
+ * Módulo Galax Pay Cartão para WHMCS
+ * @copyright	2022 Gofas Software
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.3.0
+ * @version		0.1.0
  */
 add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 	$params = getGatewayVariables('gofasgalaxpaycartao');

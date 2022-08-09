@@ -1,16 +1,16 @@
-const token = "'.$public_token.'";
-				var galaxPay = new GalaxPay(token, '.$environment.');
-
-				const card = galaxPay.newCard({
-					number: "'.$params['cardnum'].'",
-					holder: "'.$customer['name'].'",
-					expiresAt: "20'.substr($params['cardexp'], 2, 2).'-'.substr($params['cardexp'], 0, 2).'",
-					cvv: "'.$params['cccvv'].'"
-				});
-				galaxPay.hashCreditCard(card, function(hash) {
-					document.getElementById("cardHash").value = cardHash;
-					console.log(hash);
-				}, function (error) {
-					document.getElementById("error").value = error;
-					console.log(error);
-				});
+//  <script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>
+const token = "675A14116E92260664C4F3F398B490BD2D43FD7BC1055FBE98ED9B5E0A44926AEFCB2953A8336ADC4F94766685A6567457B66B028756913D729C380509C0AF85";
+var galaxPay = new GalaxPay(token, false);
+const card = galaxPay.newCard({
+    number: "5454545454545454",
+    holder: "Goldduck Silver",
+    expiresAt: "2028-12",
+    cvv: "123"
+});
+galaxPay.hashCreditCard(card, function(hash) {
+     //document.getElementById("cardHash").value = hash;
+    console.log(hash);
+}, function (error) {
+    //document.getElementById("error").value = error;
+    console.log(error);
+});

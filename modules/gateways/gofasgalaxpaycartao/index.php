@@ -1,11 +1,11 @@
 <?php
 /**
- * Módulo Juno Cartão para WHMCS
- * @copyright	2020 Gofas Software
- * @see			https://gofas.net/?p=12042
+ * Módulo Galax Pay Cartão para WHMCS
+ * @copyright	2022 Gofas Software
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.4.0
+ * @version		0.1.0
  */
 use WHMCS\Database\Capsule;
 require __DIR__.'/includes/hooks.php';
@@ -16,14 +16,11 @@ function gofasgalaxpaycartao_3dsecure($params){
 	require __DIR__.'/includes/params.php';
 	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
 		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
-		$ggpcwhmcsurl_created_at			= $ggpcwhmcsurl_->created_at;
+		$ggpcwhmcsurl_created_at		= $ggpcwhmcsurl_->created_at;
 	}
     $url = $ggpcwhmcsurl.'/modules/gateways/gofasgalaxpaycartao/includes/iframe.php';
 	if( $params['amount'] >= $params['minimunamount']){
-		$token = ggpc_get_token($galax_id,$galax_hash);
-		echo '<pre style="height:250px;">token:', print_r($token);
-		//echo 'Postfields:', print_r($postfields);
-		echo '</pre>';
+		 //$token = ggpc_get_token($galax_id,$galax_hash);
 		 $Params = json_decode( json_encode($params), true);
 		 $pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
 		 if($pay_method_id){
@@ -41,12 +38,6 @@ function gofasgalaxpaycartao_3dsecure($params){
 		}
 		elseif( $invoice_duedate < date('Y-m-d') and !$days_for_due ){
 			$billet_duedate			= date('Y-m-d', strtotime('+1 day'));	
-		}
-		if($params['paymentadvance']){
-			$paymentadvance = '1';
-		}
-		else{
-			$paymentadvance = false;
 		}
 		$postfields = array(
 				'userid'=>$params['clientdetails']['id'],
@@ -68,15 +59,19 @@ function gofasgalaxpaycartao_3dsecure($params){
 				'cardtype'=>$params['cardtype'],
 				'pay_method_id' => $pay_method_id,
 				'credit_card_id'=>$credit_card_id,
-				'paymentadvance'=>$paymentadvance,
 			);
 			$htmlOutput = '<form method="post" action="' . $url . '">';
 			foreach ($postfields as $k => $v){
         		$htmlOutput .= '<input type="hidden" name="' . $k . '" value="' . urlencode($v) . '" />';
     		}
-			if(!$card_data){
-				$htmlOutput .= '<input type="hidden" name="cardHash" id="cardHash" value="" />';
-			}
+			
+			$htmlOutput .= '<input type="hidden" name="cardHash" id="cardHash" value="" />';
+			
+			//$htmlOutput .= '<input type="hidden" name="number" id="number" value="'.$params['cardnum'].'" />';
+			//$htmlOutput .= '<input type="hidden" name="holder" id="holder" value="'.$customer['name'].'" />';
+			//$htmlOutput .= '<input type="hidden" name="expiresAt" id="expiresAt" value="20'.substr($params['cardexp'], 2, 2).'-'.substr($params['cardexp'], 0, 2).'" />';
+			//$htmlOutput .= '<input type="hidden" name="cccvv" id="cccvv" value="'.$params['cccvv'].'" />';
+			
 			$htmlOutput .= '<input type="hidden" name="storeCard" id="storeCard" value="yes" />';
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
 			$htmlOutput .= '<input type="hidden" name="error" id="error" value="" />';
@@ -88,26 +83,26 @@ function gofasgalaxpaycartao_3dsecure($params){
 			elseif(!$params['sandbox']){
 				$environment = 'true';
 			}
-			if(!$credit_card_id){
-				$htmlOutput .=  '<script type="text/javascript">
-				const token = "'.$public_token.'";
-				var galaxPay = new GalaxPay(token, '.$environment.');
-
+			//if(!$credit_card_id){
+				$htmlOutput .=  "<script type='text/javascript'>
+				const token = '".$public_token."';
+				var galaxPay = new GalaxPay(token, ".$environment.");
 				const card = galaxPay.newCard({
-					number: "'.$params['cardnum'].'",
-					holder: "'.$customer['name'].'",
-					expiresAt: "20'.substr($params['cardexp'], 2, 2).'-'.substr($params['cardexp'], 0, 2).'",
-					cvv: "'.$params['cccvv'].'"
+					number: '".$params['cardnum']."',
+					holder: '".$customer['name']."',
+					expiresAt: '20".substr($params['cardexp'], 2, 2)."-".substr($params["cardexp"], 0, 2)."',
+					cvv: '".$params['cccvv']."'
 				});
 				galaxPay.hashCreditCard(card, function(hash) {
-					document.getElementById("cardHash").value = hash;
+					document.getElementById('cardHash').value = hash;
 					console.log(hash);
 				}, function (error) {
-					document.getElementById("error").value = error;
+					document.getElementById('error').value = error;
 					console.log(error);
 				});
-			</script>';
-			}
+			</script>";
+			//}
+			
 			$htmlOutput .= '<script type="text/javascript">
 				document.getElementById("storeCard").value = sessionStorage.getItem("nostore");
 				if(sessionStorage.getItem("installments_") > 1 ){
@@ -157,12 +152,7 @@ function gofasgalaxpaycartao_capture($params){
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
-	if($params['paymentadvance']){
-		$paymentadvance = true;
-	}
-	else{
-		$paymentadvance = false;
-	}
+	
 	if($address_complement){
 		$address_complement = $address_complement;
 	}
@@ -190,7 +180,7 @@ function gofasgalaxpaycartao_capture($params){
 		'paymentTypes' => 'credit_card',
 		'notifyPayer' => false,
 		'creditCardId'=> $credit_card_id,
-		'paymentAdvance'=>$paymentadvance,
+		//'paymentAdvance'=>$paymentadvance,
 	);
 	$charge_ = ggpc_charge($charge_url,$postfields);
 	$charge = json_decode( json_encode($charge_), true);
