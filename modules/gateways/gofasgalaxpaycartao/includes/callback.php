@@ -1,11 +1,11 @@
 <?php
 /**
- * Módulo Juno Cartão para WHMCS
- * @copyright	2020 Gofas Software
- * @see			https://gofas.net/?p=12042
+ * Módulo Galax Pay Cartão para WHMCS
+ * @copyright	2022 Gofas Software
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.2.2
+ * @version		0.1.0
  */
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
@@ -13,7 +13,7 @@ require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 
 $params = getGatewayVariables('gofasgalaxpaycartao');
 if(!$params['type']){die("Module Not Activated");}
-if( $_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['chargeCode'] ){
+if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['chargeCode']*/ ){
 	$invoice = localAPI('getinvoice',array('invoiceid'=>$_POST['chargeReference']),(int)$params['admin']);
 	if( (int)$invoice['invoiceid'] === (int)$_POST['chargeReference'] ){
 		if( !function_exists('ggpc_callback') ){

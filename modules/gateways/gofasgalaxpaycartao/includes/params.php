@@ -15,7 +15,7 @@ if ($params['sandbox']){
     $galax_hash = $params['sandbox_galax_hash'];
     $public_token = $params['sandbox_public_token'];
     $charge_url = 'https://api.sandbox.cloud.galaxpay.com.br/v2';
-    $referralToken = '34c8f0bb';
+   //$referralToken = '34c8f0bb';
 }
 if (!$params['sandbox']){
     $api_mode = 'live';
@@ -23,5 +23,5 @@ if (!$params['sandbox']){
     $galax_hash = $params['galax_hash'];
     $public_token = $params['public_token'];
     $charge_url = 'https://api.galaxpay.com.br/v2';
-    $referralToken = '34c8f0bb';
+    //$referralToken = '34c8f0bb';
 }

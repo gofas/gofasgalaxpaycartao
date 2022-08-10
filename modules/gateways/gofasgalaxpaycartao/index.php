@@ -12,15 +12,14 @@ require __DIR__.'/includes/hooks.php';
 require_once __DIR__.'/includes/config.php';
 function gofasgalaxpaycartao_3dsecure($params){
 	define('CLIENTAREA', true);
-	require __DIR__.'/includes/functions.php';		
-	require __DIR__.'/includes/params.php';
+	require __DIR__.'/includes/functions.php';
+	
 	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
 		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 		$ggpcwhmcsurl_created_at		= $ggpcwhmcsurl_->created_at;
 	}
     $url = $ggpcwhmcsurl.'/modules/gateways/gofasgalaxpaycartao/includes/iframe.php';
 	if( $params['amount'] >= $params['minimunamount']){
-		 //$token = ggpc_get_token($galax_id,$galax_hash);
 		 $Params = json_decode( json_encode($params), true);
 		 $pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
 		 if($pay_method_id){
@@ -55,7 +54,10 @@ function gofasgalaxpaycartao_3dsecure($params){
 				'phonenumber'=>$params['clientdetails']['phonenumber'],
 				'email'=>$params['clientdetails']['email'],
 				'cclastfour'=>$params['clientdetails']['cclastfour'],
+				'cardnum'=>$params['cardnum'],
+				'expiresAt'=> '20'.substr($params['cardexp'], 2, 2)."-".substr($params["cardexp"], 0, 2),
 				'cardexp'=>$params['cardexp'],
+				'cccvv'=>$params['cccvv'],
 				'cardtype'=>$params['cardtype'],
 				'pay_method_id' => $pay_method_id,
 				'credit_card_id'=>$credit_card_id,
@@ -65,13 +67,7 @@ function gofasgalaxpaycartao_3dsecure($params){
         		$htmlOutput .= '<input type="hidden" name="' . $k . '" value="' . urlencode($v) . '" />';
     		}
 			
-			$htmlOutput .= '<input type="hidden" name="cardHash" id="cardHash" value="" />';
-			
-			//$htmlOutput .= '<input type="hidden" name="number" id="number" value="'.$params['cardnum'].'" />';
-			//$htmlOutput .= '<input type="hidden" name="holder" id="holder" value="'.$customer['name'].'" />';
-			//$htmlOutput .= '<input type="hidden" name="expiresAt" id="expiresAt" value="20'.substr($params['cardexp'], 2, 2).'-'.substr($params['cardexp'], 0, 2).'" />';
-			//$htmlOutput .= '<input type="hidden" name="cccvv" id="cccvv" value="'.$params['cccvv'].'" />';
-			
+			$htmlOutput .= '<input type="hidden" name="cardHash" id="cardHash" value="" />';			
 			$htmlOutput .= '<input type="hidden" name="storeCard" id="storeCard" value="yes" />';
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
 			$htmlOutput .= '<input type="hidden" name="error" id="error" value="" />';
@@ -83,7 +79,7 @@ function gofasgalaxpaycartao_3dsecure($params){
 			elseif(!$params['sandbox']){
 				$environment = 'true';
 			}
-			//if(!$credit_card_id){
+			if(!$credit_card_id and !$pay_method_id){
 				$htmlOutput .=  "<script type='text/javascript'>
 				const token = '".$public_token."';
 				var galaxPay = new GalaxPay(token, ".$environment.");
@@ -101,7 +97,7 @@ function gofasgalaxpaycartao_3dsecure($params){
 					console.log(error);
 				});
 			</script>";
-			//}
+			}
 			
 			$htmlOutput .= '<script type="text/javascript">
 				document.getElementById("storeCard").value = sessionStorage.getItem("nostore");

@@ -9,19 +9,54 @@
  */
 if(!defined("WHMCS")){die();}
 use WHMCS\Database\Capsule;
+if(!function_exists('ggpc_config') ){
+	function ggpc_config($set=false){
+		$setting = array();
+		foreach( Capsule::table('tblpaymentgateways') -> where( 'gateway', '=', 'gofasgalaxpaycartao') -> get( array( 'setting', 'value') ) as $settings ){
+			$setting[$settings->setting] = $settings->value;
+		}
+		if($set){
+			return $setting[$set];
+		}
+		return $setting; // $params = ggpc_config();
+	}
+}
+if(!function_exists('ggpc_api_connect') ){
+	function ggpc_api_connect(){
+		$params = getGatewayVariables('gofasgalaxpaycartao');
+		if($params['sandbox']){
+			$params_api = [
+				'api_mode' => 'sandbox',
+				'galax_id' => $params['sandbox_galax_id'],
+				'galax_hash' => $params['sandbox_galax_hash'],
+				'public_token' => $params['sandbox_public_token'],
+				'charge_url' => 'https://api.sandbox.cloud.galaxpay.com.br/v2',
+				//'sandbox' => true,
+				'galaxIdPartner' => '5473',
+				'galaxHashPartner' => '83Mw5u8988Qj6fZqS4Z8K7LzOo1j28S706R0BeFe',
+			];
+		}
+		if(!$params['sandbox']){
+			$params_api = [
+				'api_mode' => 'live',												// $params_api['api_mode']
+				'galax_id' => $params['galax_id'],									// $params_api['galax_id']
+				'galax_hash' => $params['galax_hash'],								// $params_api['galax_hash']
+				'public_token' => $params['public_token'],							// $params_api['public_token']
+				'charge_url' => 'https://api.galaxpay.com.br/v2',					// $params_api['charge_url']
+				//'sandbox' => false,													// $params_api['sandbox']
+				'galaxIdPartner' => '29009',										// $params_api['galaxIdPartner']
+				'galaxHashPartner' => 'U9F6YvKgI77gVqJ60kHk6qOd04RhLfN0YyJ8AfA6',	// $params_api['galaxHashPartner']
+			];
+		}
+		return $params_api;
+	}
+}
 if( !function_exists('ggpc_get_token') ){
-	function ggpc_get_token($client_id,$client_secret,$sandbox){
-		if($sandbox){
-			$galaxIdPartner = "20";
-			$galaxHashPartner = "ea045be1";
-		}
-		else{
-			$galaxIdPartner = "20";
-			$galaxHashPartner = "34c8f0bb";
-		}
+	function ggpc_get_token(){
+		$params_api = ggpc_api_connect();
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
-			CURLOPT_URL => 'https://api.sandbox.cloud.galaxpay.com.br/v2/token',
+			CURLOPT_URL => $params_api['charge_url'].'/token',
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING => '',
 			CURLOPT_MAXREDIRS => 10,
@@ -34,8 +69,8 @@ if( !function_exists('ggpc_get_token') ){
 			  "scope": "customers.read customers.write plans.read plans.write transactions.read transactions.write webhooks.write cards.read cards.write card-brands.read subscriptions.read subscriptions.write charges.read charges.write boletos.read carnes.read payment-methods.read"
 			}',
 			  CURLOPT_HTTPHEADER => array(
-		    	'Authorization: Basic '.base64_encode((string)$client_id.':'.(string)$client_secret),
-				//'AuthorizationPartner: '.base64_encode($galaxIdPartner.':'. $galaxHashPartner),
+		    	'Authorization: Basic '.base64_encode((string)$params_api['galax_id'].':'.(string)$params_api['galax_hash']),
+				'AuthorizationPartner: '.base64_encode($params_api['galaxIdPartner'].':'. $params_api['galaxHashPartner']),
 		    	'Content-Type: application/json'
 		  	)
 		));
@@ -47,86 +82,53 @@ if( !function_exists('ggpc_get_token') ){
 	}
 }
 if( !function_exists('ggpc_charge') ){
-	function ggpc_charge($charge_url,$postfields){
+	function ggpc_charge($postfields){
+		$params_api = ggpc_api_connect();
     	$curl = curl_init();
-		$query = $charge_url;
-		curl_setopt($curl, CURLOPT_URL, $charge_url);
-    	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,1);
-    	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,1);
-		curl_setopt($curl, CURLOPT_POST, 1);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($postfields) );
-    	curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-		curl_setopt($curl, CURLOPT_HEADER, 0);
-		$result = json_decode(curl_exec($curl));
-    	$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/charges',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_HTTPHEADER => array(
+			  'Authorization: Bearer '.$postfields['access_token'],
+			  'Content-Type: application/json'
+			),
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS => json_encode($postfields['charge']),
+		));
+		$response = json_decode(curl_exec($curl),true);
+		$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
-		return array('result'=>$result,'http_status'=>$http_status);
-
-//////////
-
-
-$curl = curl_init();
-
-curl_setopt_array($curl, array(
-  CURLOPT_URL => 'https://api.sandbox.cloud.galaxpay.com.br/v2/charges',
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_ENCODING => '',
-  CURLOPT_MAXREDIRS => 10,
-  CURLOPT_TIMEOUT => 0,
-  CURLOPT_FOLLOWLOCATION => true,
-  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-  CURLOPT_HTTPHEADER => array(
-    'Authorization: Bearer '.$postfields['token'],
-    'Content-Type: application/json'
-  ),
-  CURLOPT_CUSTOMREQUEST => 'POST',
-  CURLOPT_POSTFIELDS =>'{
-    "myId": "pay-62d75de8acfc98.90621609",
-    "value": 12999,
-    "additionalInfo": "Lorem ipsum dolor sit amet.",
-    "payday": "2022-07-19",
-    "payedOutsideGalaxPay": false,
-    "mainPaymentMethodId": "creditcard",
-    "Customer": {
-        "myId": "pay-62d75de8b364f4.13984475",
-        "name": "Lorem ipsum dolor sit amet.",
-        "document": "45686560447",
-        "emails": [
-            "teste4519email2203@galaxpay.com.br",
-            "teste1489email8541@galaxpay.com.br"
-        ],
-        "phones": [
-            3140201512,
-            31983890110
-        ]
-    },
-    "PaymentMethodCreditCard": {
-        "Link": {
-            "minInstallment": 1,
-            "maxInstallment": 12
-        },
-        "Card": {
-            "myId": "pay-62d75de8cf9d89.87917599",
-            "hash": "ABCD-1234-EFGH-5678-ABCD-1234-EFGH-5678",
-            "number": "4111 1111 1111 1111",
-            "holder": "JOAO J J DA SILVA",
-            "expiresAt": "2022-07",
-            "cvv": "363"
-        },
-        "cardOperatorId": "rede",
-        "preAuthorize": false,
-        "qtdInstallments": 12
-    },
-}'
-));
-
-$response = curl_exec($curl);
-
-curl_close($curl);
-echo $response;
-
-
-
+		return ['response_code'=>$response_code,'response'=>$response];
+	}
+}
+if( !function_exists('ggpc_charge_capture') ){
+	function ggpc_charge_capture($charge_id,$access_token){
+		$params_api = ggpc_api_connect();
+		$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/charges/'.$charge_id.'/galaxPayId/capture',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'PUT',
+			//CURLOPT_POSTFIELDS =>'[]',
+			CURLOPT_HTTPHEADER => array(
+			  'Authorization: Bearer '.$access_token,
+			  'Content-Type: application/json'
+			),
+		  ));
+		$response = json_decode(curl_exec($curl),true);
+		$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['response_code'=>$response_code,'response'=>$response];
 	}
 }
 if( !function_exists('ggpc_add_trans') ){
@@ -149,30 +151,7 @@ if( !function_exists('ggpc_add_trans') ){
 		}
 	}
 }
-if( !function_exists('ggpc_config') ){
-	function ggpc_config($set = false){
-		$setting = array();
-		foreach( Capsule::table('tbladdonmodules') -> where( 'module', '=', 'gofasgalaxpaycartao') -> get( array( 'setting', 'value') ) as $settings ){
-			$setting[$settings->setting] = $settings->value;
-		}
-		if($set){
-			return $setting[$set];
-		}
-		return $setting;
-	}
-}
-if( !function_exists('ggpc_config') ){
-	function ggpc_config($set = false){
-		$setting = array();
-		foreach( Capsule::table('tblpaymentgateways') -> where( 'gateway', '=', 'gofasgalaxpaycartao') -> get( array( 'setting', 'value') ) as $settings ){
-			$setting[$settings->setting] = $settings->value;
-		}
-		if($set){
-			return $setting[$set];
-		}
-		return $setting;
-	}
-}
+
 if(!function_exists('ggpc_customer') ){
 	function ggpc_customer($client_id){
 		//Determine custom fields id
