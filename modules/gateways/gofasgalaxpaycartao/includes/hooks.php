@@ -7,6 +7,12 @@
  * @support		https://gofas.net/?p=14644
  * @version		0.1.0
  */
+add_hook('ClientAreaPage', 1, function($vars) {
+	if(stripos($_SERVER['REQUEST_URI'], 'process') and stripos($_SERVER['REQUEST_URI'], 'invoice')){
+	    echo '<style>.alert.alert-info.text-center{display: none;}</style>';
+	}
+	return;
+});
 add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 	$params = getGatewayVariables('gofasgalaxpaycartao');
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
@@ -20,6 +26,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 			$minimunamountinstallments = (float)'100.00';
 		}
 		if($params['installments'] and ( (float)$minimunamountinstallments <= (float)$vars_->invoice->model->total) ){
+		 
 		 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="yes" />';
 		 $htmlOutput .= '<script>sessionStorage.setItem("installment_", "yes");</script>';
 		 $options_installments .= '<label class="col-sm-4 control-label">Parcelamento</label><div class="col-sm-6" style="margin-bottom: 15px;"><select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
@@ -53,7 +60,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 	});
 	//echo '<pre style="height: 200px;">',print_r($vars),'</pre>';
 	return array(
-		'allowClientsToRemoveCards'=>false,
+		'allowClientsToRemoveCards'=>true,
 		//'templatefile'=>'../../modules/gateways/gofasgalaxpaycartao/templates/invoice-payment',
 	);
 	

@@ -12,8 +12,6 @@ require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 use WHMCS\Database\Capsule;
-
-
 if($_POST and !$_POST['error'] ){
 	//echo 'Processando o pagamento...';
 	require __DIR__.'/functions.php';
@@ -89,19 +87,9 @@ if($_POST and !$_POST['error'] ){
 	);
 	//$postfields = array_merge($postfields_,$postfields_amount);
 	$charge = ggpc_charge($postfields);
-	$charge_capture = ggpc_charge_capture($charge['response']['Charge']['galaxPayId'],$access_token);
-	
-	if($params['log']){	
-		echo '<pre style="height:250px;">$_POST:', print_r($_POST);
-		echo '<br>$params:', print_r($params);
-		echo '<br>$access_token:', print_r($access_token);
-		echo '<br>Postfields:', print_r($postfields);
-		echo '<br>Charge:', print_r($charge); 
-		echo '<br>charge_capture:', print_r($charge_capture); 
-		echo '</pre>';
-	}
+	//$charge_capture = ggpc_charge_capture($charge['response']['Charge']['galaxPayId'],$access_token);
 
-	if( (string)$charge['result']['data']['charges']['0']['payments']['0']['status'] === (string)'CONFIRMED'){
+	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'captured'){
 		if( (int)$_POST['installmentsnum'] > 1 ){
 			$trans_desc = "Pagamento Aprovado - Parcelado em ".(int)$_POST['installmentsnum']."x R$".number_format( $_POST['amount'] / (int)$_POST['installmentsnum'] ,  2, ',', '.')." - ".$_POST['cardtype'].'-'.$_POST['cclastfour'];
 		}
@@ -112,19 +100,35 @@ if($_POST and !$_POST['error'] ){
 			$_POST['userid'],
 			$_POST['invoiceid'],
 			$_POST['amount'],
-			$charge['result']['data']['charges']['0']['payments']['0']['fee'] * $_POST['installmentsnum'],
-			'ggpcc-'.$charge['result']['data']['charges']['0']['code'].'-'.$api_mode.'-'.$charge['result']['data']['charges']['0']['payments']['0']['id'].'.',
+			$params['fee'] * $_POST['installmentsnum'],
+			'ggpc-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
 			$trans_desc
 			);	
 		if($ggpc_add_trans['error']){
 			$error .= $ggpc_add_trans['error'];
 		}
 	}
-	if( $charge['result']['errorMessage']){
-		$error .= $charge['result']['errorMessage'];
+	if( $charge['result']['error']){
+		$error .= $charge['result']['error']['message'];
+		$error .= implode(', ',$charge['result']['error']['details']);
 	}
+	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] !== (string)'captured'){
+		$error .= $charge['result']['Charge']['Transactions']['0']['statusDescription'];
+	}
+	/*
 	// Store/Update card
-	if( $_POST['storeCard'] === 'yes' and $_POST['pay_method_id'] and $_POST['cardHash'] ){
+	if( $_POST['storeCard'] === 'yes' and $_POST['pay_method_id'] and $_POST['cardHash'] and (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'captured' ){
+		$card_postfields = [
+			'myId'=> $_POST['pay_method_id'], //$charge['result']['Charge']['Transactions']['0']['CreditCard']['Card']['myId'],
+			'hash'=> $_POST['cardHash'],
+			'number'=>$_POST['cardnum'],
+			'payerName'=> $_POST['cardHash'],
+			'expiresAt'=> $_POST['expiresAt'],
+			'cvv'=> $_POST['cccvv'],
+		];
+		//$create_card = ggpc_card_create($card_postfields,$access_token);
+		
+		
 		try {
 			Capsule::table('tblcreditcards')->where( 'pay_method_id', $_POST['pay_method_id'])->delete();
 		}
@@ -137,7 +141,7 @@ if($_POST and !$_POST['error'] ){
 		catch (\Exception $e){
 			$error .= $e->getMessage();
 		}	
-		/*
+		
 		try {
 			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
                 $_POST['userid'],
@@ -170,9 +174,9 @@ if($_POST and !$_POST['error'] ){
 		catch (\Exception $e){
 			$error .= $e->getMessage();
 		}
-		*/
+		
 	}
-	elseif( $_POST['storeCard'] === 'no' and $_POST['pay_method_id']){
+	elseif( $_POST['storeCard'] === 'no' and (!$_POST['pay_method_id'] || !$_POST['cardHash']) ){
 		try {
 			Capsule::table('tblcreditcards')->where( 'pay_method_id', $_POST['pay_method_id'])->delete();
 		}
@@ -186,27 +190,40 @@ if($_POST and !$_POST['error'] ){
 			$error .= $e->getMessage();
 		}
 	}
+	*/
 	
+}
+if($params['log']){	
+	$log = [
+		'POST'=>$_POST,
+		 'params'=> $params,
+		 'access_token'=> $access_token,
+		 'customer'=> $customer,
+		 'Postfields'=> $postfields,
+		 'Charge'=> $charge, 
+		 'create_card'=> $create_card, 
+	];
+	echo '<pre style="height:250px;">',print_r($log),'</pre>';
 }
 elseif($_POST['error']){
 	$error = $_POST['error'];
 }
 if(!$error){
 	if($params['log']){
-		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields,), 'post',  array('charge'=>$charge, 'charge_payments'=>$charge_payments,'charge_payments_'=>$charge_payments_, "$AddPayMethod"=>$AddPayMethod), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>ggpc_version(),'params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields,), 'post',  array('charge'=>$charge, 'charge_payments'=>$charge_payments,'charge_payments_'=>$charge_payments_, "$AddPayMethod"=>$AddPayMethod), 'replaceVars');
 	}
 	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
-	//echo '<script>window.top.location.href='.$invoice_page.'</script>';
+	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
 if($error and !$params['onlycustomerrormessage']){
 	echo '<div style="background-color: #f2dede; border-color: #ebccd1; padding: 15px 15px 22px 15px; border-radius: 3px; position: absolute;top: 0;width: 100%;font-size: 16px;color: #a94442;text-align: center;font-family: Verdana, Thaoma, SANS-SERIF;line-height: 30px;">'.$error.'<br>'.$errormessage.'</div>';
 	if($params['log']){
-		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>ggpc_version(),'params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
 	}
 }
 if($error and $params['onlycustomerrormessage']){
 	echo '<div style="background-color: #f2dede; border-color: #ebccd1; padding: 15px 15px 22px 15px; border-radius: 3px; position: absolute;top: 0;width: 100%;font-size: 16px;color: #a94442;text-align: center;font-family: Verdana, Thaoma, SANS-SERIF;line-height: 30px;">'.$errormessage.'</div>';
 	if($params['log']){
-		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>'1.4.0','params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
+		logModuleCall('gofasgalaxpaycartao', 'process_payment', array('module_version'=>ggpc_version(),'params'=> $params, 'POST'=>$_POST, 'postfields'=> $postfields), 'post',  array('charge'=>$charge), 'replaceVars');
 	}
 }

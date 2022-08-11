@@ -7,21 +7,26 @@
  * @support		https://gofas.net/?p=14644
  * @version		0.1.0
  */
+require_once __DIR__ . '/../../../../init.php';
+require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
+require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 if(!defined("WHMCS")){die();}
 use WHMCS\Database\Capsule;
-if(!function_exists('ggpc_config') ){
-	function ggpc_config($set=false){
-		$setting = array();
-		foreach( Capsule::table('tblpaymentgateways') -> where( 'gateway', '=', 'gofasgalaxpaycartao') -> get( array( 'setting', 'value') ) as $settings ){
-			$setting[$settings->setting] = $settings->value;
+if(!function_exists('ggpc_version')){
+	function ggpc_version($int=false){
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpc_version') -> get( array( 'value','created_at') ) as $ggpc_version_ ){
+			$ggpc_version				= $ggpc_version_->value;
+			$ggpc_version_created_at	= $ggpc_version_->created_at;
 		}
-		if($set){
-			return $setting[$set];
+		if(!$int){
+			return $ggpc_version;
 		}
-		return $setting; // $params = ggpc_config();
+		if($int){
+			return (int)preg_replace("/[^0-9]/", "", $ggpc_version);
+		}
 	}
 }
-if(!function_exists('ggpc_api_connect') ){
+if(!function_exists('ggpc_api_connect')){
 	function ggpc_api_connect(){
 		$params = getGatewayVariables('gofasgalaxpaycartao');
 		if($params['sandbox']){
@@ -100,12 +105,13 @@ if( !function_exists('ggpc_charge') ){
 			CURLOPT_CUSTOMREQUEST => 'POST',
 			CURLOPT_POSTFIELDS => json_encode($postfields['charge']),
 		));
-		$response = json_decode(curl_exec($curl),true);
-		$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		$result = json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
-		return ['response_code'=>$response_code,'response'=>$response];
+		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
+/*
 if( !function_exists('ggpc_charge_capture') ){
 	function ggpc_charge_capture($charge_id,$access_token){
 		$params_api = ggpc_api_connect();
@@ -131,6 +137,33 @@ if( !function_exists('ggpc_charge_capture') ){
 		return ['response_code'=>$response_code,'response'=>$response];
 	}
 }
+
+if( !function_exists('ggpc_card_create') ){
+	function ggpc_card_create($card_postfields,$access_token){
+		$params_api = ggpc_api_connect();
+		$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/cards/'.$card_postfields['myId'].'/myId',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS =>json_encode($card_postfields),
+			CURLOPT_HTTPHEADER => array(
+			  'Authorization: Bearer '.$access_token,
+			  'Content-Type: application/json'
+			),
+		  ));
+		$result = curl_exec($curl);//json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['result_code'=>$result_code,'result'=>$result];
+	}
+}
+*/
 if( !function_exists('ggpc_add_trans') ){
 	function ggpc_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
  		$addtransvalues['userid'] = $user_id;
@@ -155,7 +188,8 @@ if( !function_exists('ggpc_add_trans') ){
 if(!function_exists('ggpc_customer') ){
 	function ggpc_customer($client_id){
 		//Determine custom fields id
-		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), ggpc_config('admin'));
+		$params = getGatewayVariables('gofasgalaxpaycartao');
+		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), $params['admin']);
 		foreach( Capsule::table('tblcustomfields')->where('type','=','client')->get() as $customfield ){
 			$customfield_id = $customfield->id;
 			$customfield_name = strtolower($customfield->fieldname);

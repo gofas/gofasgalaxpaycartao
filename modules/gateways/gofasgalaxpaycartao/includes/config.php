@@ -20,6 +20,7 @@ function gofasgalaxpaycartao_MetaData(){
 function gofasgalaxpaycartao_config(){
 	$module_version = '0.1.0';
 	$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
+	/*
 	if( !function_exists('ggpc_verifyInstall') ){
 	function ggpc_verifyInstall(){
 		if( !Capsule::schema()->hasTable('gofasgalaxpaycartao') ){
@@ -47,10 +48,11 @@ function gofasgalaxpaycartao_config(){
 		}
 	}}
 	$verifyInstall = ggpc_verifyInstall();
+	
 	if($verifyInstall['error']){
 		$error = $verifyInstall['error'];
 	}
-	
+	*/
 	$actual_link		= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	if( stripos( $actual_link, '/configgateways.php') ){
 		$whmcs_url__ = str_replace("\\",'/',(isset($_SERVER['HTTPS']) ? "https://" : "http://").$_SERVER['HTTP_HOST'].substr(getcwd(),strlen($_SERVER['DOCUMENT_ROOT'])));
@@ -64,11 +66,23 @@ function gofasgalaxpaycartao_config(){
 		}
 		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsadminurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsadminurl_ ){
 			$ggpcwhmcsadminurl				= $ggpcwhmcsadminurl_->value;
-			$ggpcwhmcsadminurl_created_at	= $ggpcwhmcsurl_->created_at;
+			$ggpcwhmcsadminurl_created_at	= $ggpcwhmcsadminurl_->created_at;
 		}
 		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsadminpath') -> get( array( 'value','created_at') ) as $ggpcwhmcsadminpath_ ){
 			$ggpcwhmcsadminpath				= $ggpcwhmcsadminpath_->value;
-			$ggpcwhmcsadminpath_created_at	= $ggpcwhmcsurl_->created_at;
+			$ggpcwhmcsadminpath_created_at	= $ggpcwhmcsadminpath_->created_at;
+		}
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpc_version') -> get( array( 'value','created_at') ) as $ggpc_version_ ){
+			$ggpc_version				= $ggpc_version_->value;
+			$ggpc_version_created_at	= $ggpc_version_->created_at;
+		}
+		if( !$ggpc_version ){
+			try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpc_version', 'value' =>$module_version, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
+			catch (\Exception $e){ $e->getMessage(); }
+		}
+		if( $ggpc_version and (string)$ggpc_version !== (string)$module_version){
+			try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpc_version')->update(array('value' => $module_version, 'created_at' =>  $ggpc_version_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
+			catch (\Exception $e){$e->getMessage();}
 		}
 		if( !$ggpcwhmcsurl ){
 			try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsurl', 'value' => $whmcs_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
@@ -243,6 +257,14 @@ function gofasgalaxpaycartao_config(){
 			'Default' 		=> '0',
             'Options'       => $tblticketdepartments,
 			'Description' => 'Escolha o departamento de suporte que receberá notificação por email quando houver erros ao gerar cobranças',
+		),
+		// fee
+		'fee' => array(
+			'FriendlyName' => $opt_num++.'- Tarifa',
+			'Type' => 'text',
+			'Size' => '10',
+			'Default' => '5',
+			'Description' => 'Insira o valor em % pago por transação para preencher o campo <i>fee</i> das faturas',
 		),
 		// minimum amount
 		'minimunamount' => array(
