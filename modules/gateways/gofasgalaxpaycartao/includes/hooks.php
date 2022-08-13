@@ -60,7 +60,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 	});
 	//echo '<pre style="height: 200px;">',print_r($vars),'</pre>';
 	return array(
-		'allowClientsToRemoveCards'=>true,
+		'allowClientsToRemoveCards'=>false,
 		//'templatefile'=>'../../modules/gateways/gofasgalaxpaycartao/templates/invoice-payment',
 	);
 	

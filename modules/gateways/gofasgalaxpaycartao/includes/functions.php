@@ -112,6 +112,40 @@ if( !function_exists('ggpc_charge') ){
 	}
 }
 /*
+if( !function_exists('ggpc_charge_verify') ){
+	function ggpc_charge_verify($postfields){
+		$params_api = ggpc_api_connect();
+		$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/transactions?galaxPayIds='.$postfields['galaxPayIds'].'&limit=1&startAt=0',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'GET',
+			CURLOPT_HTTPHEADER => array(
+			  'Authorization: Bearer '.$postfields['access_token']
+			),
+		));
+		$result = json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['result_code'=>$result_code,'result'=>$result];
+	}
+}
+if( !function_exists('ggpc_get_string_between') ){
+	function ggpc_get_string_between($string, $start, $end){
+		$string = " ".$string;
+		$ini = strpos($string,$start);
+		if ($ini == 0) return "";
+		$ini += strlen($start);   
+		$len = strpos($string,$end,$ini) - $ini;
+		return substr($string,$ini,$len);
+	}
+}
+
 if( !function_exists('ggpc_charge_capture') ){
 	function ggpc_charge_capture($charge_id,$access_token){
 		$params_api = ggpc_api_connect();
@@ -131,10 +165,10 @@ if( !function_exists('ggpc_charge_capture') ){
 			  'Content-Type: application/json'
 			),
 		  ));
-		$response = json_decode(curl_exec($curl),true);
-		$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		$result = json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
-		return ['response_code'=>$response_code,'response'=>$response];
+		return ['result_code'=>$response_code,'result'=>$result];
 	}
 }
 
@@ -143,7 +177,7 @@ if( !function_exists('ggpc_card_create') ){
 		$params_api = ggpc_api_connect();
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
-			CURLOPT_URL => $params_api['charge_url'].'/cards/'.$card_postfields['myId'].'/myId',
+			CURLOPT_URL => $params_api['charge_url'].'/cards/'.$card_postfields['userid'].'/myId',
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING => '',
 			CURLOPT_MAXREDIRS => 10,
@@ -157,13 +191,69 @@ if( !function_exists('ggpc_card_create') ){
 			  'Content-Type: application/json'
 			),
 		  ));
-		$result = curl_exec($curl);//json_decode(curl_exec($curl),true);
+		$result = json_decode(curl_exec($curl),true);
 		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
 */
+if( !function_exists('ggpc_card_add') ){
+	function ggpc_card_add($card,$pay_method_id){
+		try {
+			Capsule::table('tblcreditcards')->where( 'pay_method_id', $pay_method_id)->delete();
+		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
+		}
+		try {
+			Capsule::table('tblpaymethods')->where( 'id', $pay_method_id)->delete();
+		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
+		}	
+		try {
+			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
+				$card['userid'],
+				'gofasgalaxpaycartao',
+				'000000000'.$card['cclastfour'],
+				$card['cardexp'],
+				$card['cardtype'],
+				NULL, //start date
+				$card['cardissuenum'],//NULL, //issue number
+				$card['myId']
+			);
+		}
+		catch (Exception $e){
+			$error .= $e->getMessage();
+		}
+		if($error){
+			ggpc_card_del($card['myId']);
+			return $error;
+		}
+		return 'success';
+	}
+}
+if( !function_exists('ggpc_card_del') ){
+	function ggpc_card_del($pay_method_id){
+		try {
+			Capsule::table('tblcreditcards')->where( 'pay_method_id', $pay_method_id)->delete();
+		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
+		}
+		try {
+			Capsule::table('tblpaymethods')->where( 'id', $pay_method_id)->delete();
+		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
+		}
+		if($error){
+			return $error;
+		}
+		return 'success';
+	}
+}
 if( !function_exists('ggpc_add_trans') ){
 	function ggpc_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
  		$addtransvalues['userid'] = $user_id;

@@ -23,10 +23,10 @@ function inputstorefunc_2(){
 	console.log("nostore: "+sessionStorage.getItem("nostore"));
 }
 function ggpc_inputs_2(){
-	//sessionStorage.setItem("nostore", "yes");
+	sessionStorage.setItem("nostore", "yes");
 	sessionStorage.setItem('installments_', 1);
-	//var ggpc_input = '<style>.ggpcCheckIconOff:hover:before {border: 2px solid #3e89c5;padding: 4px;}.ggpcCheckIcon:before {background-color: #3e89c5; font-size: 11px; color: #ffffff; padding: 5px; border: 1px solid #3e89c5; line-height: 0; border-radius: 50%; margin: 1px;}.ggpcCheckIconOff:before {background-color: #ffffff; font-size: 11px; color: #ffffff; padding: 5px; border: 1px solid #c6c3bf; line-height: 0; border-radius: 50%; margin: 1px;}</style><label style="cursor: pointer;" onclick="inputstorefunc_2();"><span ><i id="ggpcCheckIcon" class="ggpcCheckIcon fas fa-check"></i></span>&nbsp;&nbsp;Automatizar pagamentos futuros</label><input type="hidden" id="nostore" value="yes">';
-	//document.getElementById('inputNoStoreContainer').innerHTML = ggpc_input;
-	//document.getElementById('inputDescriptionContainer').style.display = "none";
+	var ggpc_input = '<style>.ggpcCheckIconOff:hover:before {border: 2px solid #3e89c5;padding: 4px;}.ggpcCheckIcon:before {background-color: #3e89c5; font-size: 11px; color: #ffffff; padding: 5px; border: 1px solid #3e89c5; line-height: 0; border-radius: 50%; margin: 1px;}.ggpcCheckIconOff:before {background-color: #ffffff; font-size: 11px; color: #ffffff; padding: 5px; border: 1px solid #c6c3bf; line-height: 0; border-radius: 50%; margin: 1px;}</style><label style="cursor: pointer;" onclick="inputstorefunc_2();"><span ><i id="ggpcCheckIcon" class="ggpcCheckIcon fas fa-check"></i></span>&nbsp;&nbsp;Automatizar pagamentos futuros</label><input type="hidden" id="nostore" value="yes">';
+	document.getElementById('inputNoStoreContainer').innerHTML = ggpc_input;
+	document.getElementById('inputDescriptionContainer').style.display = "none";
 }
 window.onload=ggpc_inputs_2();
