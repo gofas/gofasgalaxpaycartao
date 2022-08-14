@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.1.0
+ * @version		0.2.0
  */
 // Require libraries needed for gateway module functions.
 require_once __DIR__ . '/../../../../init.php';
@@ -21,18 +21,12 @@ if($_POST and !$_POST['error'] ){
 		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
 	$access_token_ = ggpc_get_token();
-	$access_token = $access_token_['response']['access_token'];
+	$access_token = $access_token_['result']['access_token'];
 	// Invoice Info
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$_POST['invoiceid'] ),(int)$params['admin']);
 	$line_items = array();
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
-	}
-	if( (int)$_POST['installmentsnum'] > 1 ){
-		//$postfields_amount = int(array('installments' => $_POST['installmentsnum'],'totalAmount' => $_POST['amount'],))*100;
-	}
-	elseif( (int)$_POST['installmentsnum'] === 1 ){
-		//$postfields_amount = int(array('amount' => $_POST['amount'],))*100;
 	}
 	$amount = ((int)$_POST['amount'])*100;
 	// Cobrança avulsa
@@ -44,7 +38,17 @@ if($_POST and !$_POST['error'] ){
 	if(!$_POST['cardissuenum']){
 		$card = [
 			'myId'=> (string)((int)$_POST['pay_method_id']+1),
-			'hash'=> '',
+			//'hash'=> '',
+			'number'=> $_POST['cardnum'],
+			'holder'=> $customer['name'],
+			'expiresAt'=> $_POST['expiresAt'],
+			'cvv'=> $_POST['cccvv'],
+		];
+	}
+	if(!$_POST['cardissuenum'] and (string)$_POST['storeCard'] === (string)'no'){
+		$card = [
+			//'myId'=> (string)((int)$_POST['pay_method_id']+1),
+			//'hash'=> '',
 			'number'=> $_POST['cardnum'],
 			'holder'=> $customer['name'],
 			'expiresAt'=> $_POST['expiresAt'],
@@ -75,11 +79,7 @@ if($_POST and !$_POST['error'] ){
     		    'preAuthorize'=> false,
     		    'qtdInstallments'=> $_POST['installmentsnum']
     		],
-		],
-		'notificationUrl' => $ggpcwhmcsurl . '/modules/gateways/gofasgalaxpaycartao/includes/callback.php',
-		//'creditCardHash' => urldecode($_POST['cardHash']),
-		'creditCardStore' => $storecard,
-		//'credit_card_id'=> $_POST['credit_card_id'],
+		]
 	);
 	$charge = ggpc_charge($postfields);
 	// Capturado
@@ -127,15 +127,32 @@ if($_POST and !$_POST['error'] ){
 	}
 	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] !== (string)'captured'){
 		$error .= $charge['result']['Charge']['Transactions']['0']['statusDescription'];
+		if(!$_POST['cardissuenum']){
+			$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
+			if((string)$ggpc_card_del !== (string)'success'){
+				$error .= $ggpc_card_del;
+			}
+		}
 	}
 	if( $charge['result']['error']){
+		if(!$_POST['cardissuenum']){
+			$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
+			if((string)$ggpc_card_del !== (string)'success'){
+				$error .= $ggpc_card_del;
+			}
+		}
 		$error .= $charge['result']['error']['message'];
 		$error .= implode(', ',$charge['result']['error']['details']);
 	}
-	
 }
 if($_POST['error']){
 	$error .= $_POST['error'];
+	if(!$_POST['cardissuenum'] and $_POST['pay_method_id']){
+		$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
+		if((string)$ggpc_card_del !== (string)'success'){
+			$error .= $ggpc_card_del;
+		}
+	}
 }
 if($params['log']){	
 	$log_request = [

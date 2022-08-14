@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.1.0
+ * @version		0.2.0
  */
 
 if( !defined('WHMCS')){ die(''); }
@@ -18,7 +18,7 @@ function gofasgalaxpaycartao_MetaData(){
 }
 
 function gofasgalaxpaycartao_config(){
-	$module_version = '0.1.0';
+	$module_version = '0.2.0';
 	$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
 	/*
 	if( !function_exists('ggpc_verifyInstall') ){

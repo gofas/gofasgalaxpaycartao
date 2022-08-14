@@ -5,139 +5,87 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.1.0
+ * @version		0.2.0
  */
 use WHMCS\Database\Capsule;
 function gofasgalaxpaycartao_capture($params){
-	//require __DIR__.'/includes/params.php';
 	require __DIR__.'/functions.php';
 	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
 		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
 	$Params = json_decode( json_encode($params), true);
-
+	$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
+	$params_api = ggpc_api_connect();
+	$access_token_ = ggpc_get_token();
+	$access_token = $access_token_['result']['access_token'];
+	$customer = ggpc_customer($params['clientdetails']['userid']);
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$params['invoiceid'] ), (int)$params['admin'] );
 	$line_items = array();
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
-	
-	if($address_complement){
-		$address_complement = $address_complement;
-	}
-	else{
-		$address_complement = false;
-	}
+	$amount = ((int)$params['amount'])*100;
 	$postfields = array(
-		'token'=> $galax_id,
-		'description'=> substr( implode("\n",$line_items),  0, 400),
-		'referralToken'=>$referralToken,
-		'reference'=> $params['invoiceid'],
-		'amount' => $params['amount'],
-		'payerName' => urldecode($customer['name']),
-		'payerEmail'=>urldecode($params['clientdetails']['email']),
-		'payerCpfCnpj' => urldecode($customer['document']),
-		'billingAddressStreet' => urldecode(preg_replace('/[0-9]+/i', '', $params['clientdetails']['address1'])),
-		'billingAddressNumber'=>urldecode($address_number),
-		'billingAddressComplement'=>urldecode($address_complement),
-		'billingAddressNeighborhood'=>urldecode($params['clientdetails']['address2']),
-		'billingAddressCity'=>urldecode($params['clientdetails']['city']),
-		'billingAddressState'=>urldecode($params['clientdetails']['state']),
-		'billingAddressPostcode'=>urldecode($params['clientdetails']['postcode']),
-		'notificationUrl' => $ggpcwhmcsurl.'/modules/gateways/gofasgalaxpaycartao/includes/callback.php', //$_POST['returnurl'],
-		'responseType' => 'json',
-		'paymentTypes' => 'credit_card',
-		'notifyPayer' => false,
-		//'creditCardId'=> $credit_card_id,
-		//'paymentAdvance'=>$paymentadvance,
+		'access_token'=> $access_token,
+		'charge'=> [
+			'additionalInfo'=> substr( implode("\n",$line_items),  0, 400),
+			'myId'=> $params['invoiceid'].time(),
+			'value' => $amount,
+			'payday'=>date("Y-m-d"),
+			'payedOutsideGalaxPay' => false,
+			'mainPaymentMethodId' => "creditcard",
+			'Customer' => [
+				'myId'=> $params['clientdetails']['userid'],
+				'name'=> $customer['name'],
+        		'document'=> $customer['document'],
+        		'emails'=> [
+        	    	$customer['email'],
+        		],
+        		'phones'=> [
+        	    	$customer['phone'],
+        		],
+			],
+    		'PaymentMethodCreditCard'=> [
+    		    'Card'=>[
+					'myId'=> $pay_method_id,
+				],
+			],
+    		'preAuthorize'=> false,
+    		'qtdInstallments'=> 1
+    	],
 	);
-	$charge_ = ggpc_charge($charge_url,$postfields);
-	$charge = json_decode( json_encode($charge_), true);
-	if( $charge['result']['errorMessage']){
-		$error .= $charge['result']['errorMessage'];
+	$charge = ggpc_charge($postfields);
+	if( $charge['result']['error']){
+		$error .= $charge['result']['error']['message'];
+		$error .= implode(', ',$charge['result']['error']['details']);
 	}
-	if( (string)$charge['result']['data']['charges']['0']['payments']['0']['status'] !== (string)'CONFIRMED'){
-		$error .= 'Pagamento não confirmado. '.$charge['result']['data']['charges']['0']['payments']['0']['status'];
+	if((string)$charge['result']['Charge']['Transactions']['0']['status'] !== (string)'captured'){
+		$error .= $charge['result']['Charge']['Transactions']['0']['statusDescription'] ;
 	}
-	if( (string)$charge['result']['data']['charges']['0']['payments']['0']['status'] === (string)'DECLINED'){
+	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'denied'){
 		$declined = true;
 	}
-
-	if($params['log']){
-		logModuleCall('gofasgalaxpaycartao', 'capture_payment', array('module_version'=>'1.4.0', 'params'=> $Params), 'post',  array('postfields'=>$postfields,'charge'=>$charge), 'replaceVars');
-	}
-	if(!$error and (string)$charge['result']['data']['charges']['0']['payments']['0']['status'] === (string)'CONFIRMED'){
+	if(!$error and (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'captured'){
+		$fee = (($params['amount'] * $params['fee']) / 100);
 		return array(
-                    'status' => 'success',
-                    'transid' => 'ggpcc-'.$charge['result']['data']['charges']['0']['code'].'-'.$api_mode.'-'.$charge['result']['data']['charges']['0']['payments']['0']['id'].'.',
-					'fee' => $charge['result']['data']['charges']['0']['payments']['0']['fee'],
-					'gatewayid' => NULL,
-					'rawdata' => $charge
-                );
+            'status' => 'success',
+            'transid' => 'ggpc-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
+			'fee' => $fee,
+			'gatewayid' => NULL,
+			'rawdata' => $charge
+        );
 	}
 	if($error){
 		return array(
-                'status' => 'error',
-                'rawdata' => $charge,
+            'status' => 'error',
+            'rawdata' => $charge,
          );
 	}
 	if($declined){
 		return array(
                 'status' => 'declined',
-				'declinereason' => 'Pagamento não foi autorizado.',
+				'declinereason' => $charge['result']['Charge']['Transactions']['0']['statusDescription'],
                 'rawdata' => $charge,
          );
-	}
-}
-function gofasgalaxpaycartao_refund($params){
-    require_once __DIR__.'/includes/params.php';
-	require_once __DIR__.'/includes/functions.php';
-	if($params['sandbox']){
-		$refund_url='https://api.sandbox.cloud.galaxpay.com.br/v2/charges/';
-		$api_mode = 'sandbox';
-	}
-	elseif(!$params['sandbox']){
-		$refund_url='https://api.galaxpay.com.br/v2/charges/';
-		$api_mode = 'live';
-	}
-	if( !function_exists('ggpc_get_string_between') ){
-	function ggpc_get_string_between($string, $start, $end){
-		$string = " ".$string;
-		$ini = strpos($string,$start);
-		if($ini == 0) return "";
-		$ini += strlen($start);   
-		$len = strpos($string,$end,$ini) - $ini;
-		return substr($string,$ini,$len);
-	}}
-	$trans_id = ggpc_get_string_between($params['transid'], $api_mode.'-', '.');
-	$trans_code = ggpc_get_string_between($params['transid'], 'ggpcc-', '-'.$api_mode);
-	$refund_= ggpc_charge($refund_url,array('token'=> $galax_id,'id'=>  $trans_id,));	
-	$refund = json_decode( json_encode($refund_), true);
-	$GetTransactions = localAPI('GetTransactions',array('transid' => $params['transid']), (int)$params['admin']);
-	$dt = new DateTime($GetTransactions['transactions']['transaction']['0']['date']);
-	$payment_date = $dt->format('Ymd');
-	$today = date('Ymd');
-	if((int)$today > (int)$payment_date){
-		$fee = $GetTransactions['transactions']['transaction']['0']['fees'];
-	}
-	elseif((int)$today === (int)$payment_date){
-		$fee = NULL;
-	}
-	if($params['log']){
-		logModuleCall('gofasgalaxpaycartao', 'refund_payment', array('module_version'=>'1.4.0','GetTransactions'=>$GetTransactions), 'post',  array('postfields'=>array('token'=> $galax_id,'id'=>  $trans_id,),'refund'=>$refund), 'replaceVars');
-	}
-	if($refund['result']['errorMessage']){
-		return array(
-    	    'status' => 'error',
-	        'rawdata' => $refund,
-	    );
-	}
-	elseif($refund['result']['success']){
-	    return array(
-        	'status' => 'success',
-        	'rawdata' => $refund,
-        	'transid' => 'ggpcc-'.$trans_code.'-'.$api_mode.'-refund-'.$trans_id,
-        	'fee' => $fee,
-    	);
 	}
 }

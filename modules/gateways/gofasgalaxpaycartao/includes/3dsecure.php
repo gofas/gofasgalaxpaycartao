@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.1.0
+ * @version		0.2.0
  */
 use WHMCS\Database\Capsule;
 function gofasgalaxpaycartao_3dsecure($params){
@@ -69,35 +69,12 @@ function gofasgalaxpaycartao_3dsecure($params){
 			elseif(!$params['sandbox']){
 				$environment = 'true';
 			}
-			/*
-			//if(!$pay_method_id){
-				$htmlOutput .=  "<script type='text/javascript'>
-				const token = '".$public_token."';
-				var galaxPay = new GalaxPay(token, ".$environment.");
-				const card = galaxPay.newCard({
-					number: '".$params['cardnum']."',
-					holder: '".$customer['name']."',
-					expiresAt: '20".substr($params['cardexp'], 2, 2)."-".substr($params["cardexp"], 0, 2)."',
-					cvv: '".$params['cccvv']."'
-				});
-				galaxPay.hashCreditCard(card, function(hash) {
-					document.getElementById('cardHash').value = hash;
-					console.log(hash);
-				}, function (error) {
-					document.getElementById('error').value = error;
-					console.log(error);
-				});
-			</script>";
-			//}
-			*/
 			$htmlOutput .= '<script type="text/javascript">
 				document.getElementById("storeCard").value = sessionStorage.getItem("nostore");
 				if(sessionStorage.getItem("installments_") > 1 ){
 					document.getElementById("installmentsnum").value = sessionStorage.getItem("installments_");
 				}
 		</script>';
-		logModuleCall('gofasgalaxpaycartao', __FUNCTION__, ['module_version'=>ggpc_version(),'Params'=>$Params,'params'=>$params],'post',['charge_verify'=>$charge_verify,'htmlOutput'=>$htmlOutput],'replaceVars');
-		
     		return $htmlOutput;
 	}
 	elseif( $params['amount'] < $params['minimunamount']){
@@ -113,24 +90,6 @@ function gofasgalaxpaycartao_3dsecure($params){
 		$htmlOutput .= '<input type="hidden" name="error" id="error" value="'.base64_encode($error).'" />';
     	//$htmlOutput .= '<input type="hidden" name="invoiceid" id="invoiceid" value="'.$params['invoiceid'].'" />';
 		$htmlOutput .= '</form>';
-		logModuleCall('gofasgalaxpaycartao', __FUNCTION__, ['module_version'=>ggpc_version(),'Params'=>$Params,'params'=>$params],'post',['charge_verify'=>$charge_verify,'htmlOutput'=>$htmlOutput],'replaceVars');
 		return $htmlOutput;
-	}
-	elseif($waiting){
-		$error .= 'O valor mínimo para utilizar esse método de pagamento é '.number_format( $params['minimunamount'] ,  2, ',', '.').'.';
-		$error .= '<br><a target="_top" style="color: #a94442;" href="'.$ggpcwhmcsurl.'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
-		$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
-		$error .= '<script>
-		function ggpc_redir_to_invoice(){
-			window.top.location.href='.$invoice_page.'
-		}
-		</script>';
-		$htmlOutput = '<form method="post" action="' . $url . '">';
-		$htmlOutput .= '<input type="hidden" name="error" id="error" value="'.base64_encode($error).'" />';
-    	//$htmlOutput .= '<input type="hidden" name="invoiceid" id="invoiceid" value="'.$params['invoiceid'].'" />';
-		$htmlOutput .= '</form>';
-		logModuleCall('gofasgalaxpaycartao', __FUNCTION__, ['module_version'=>ggpc_version(),'Params'=>$Params,'params'=>$params],'post',['charge_verify'=>$charge_verify,'htmlOutput'=>$htmlOutput],'replaceVars');
-		return $htmlOutput;
-	}
-	
+	}	
 }

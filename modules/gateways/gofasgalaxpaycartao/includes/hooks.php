@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.1.0
+ * @version		0.2.0
  */
 add_hook('ClientAreaPage', 1, function($vars) {
 	if(stripos($_SERVER['REQUEST_URI'], 'process') and stripos($_SERVER['REQUEST_URI'], 'invoice')){

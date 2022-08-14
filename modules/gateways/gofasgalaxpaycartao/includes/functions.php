@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.1.0
+ * @version		0.2.0
  */
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
@@ -79,11 +79,11 @@ if( !function_exists('ggpc_get_token') ){
 		    	'Content-Type: application/json'
 		  	)
 		));
-		$response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		$response = json_decode(curl_exec($curl), true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		$result = json_decode(curl_exec($curl), true);
 		//$response = curl_exec($curl);
 		curl_close($curl);
-		return ['response_code'=>$response_code,'response'=>$response];
+		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
 if( !function_exists('ggpc_charge') ){
@@ -105,6 +105,31 @@ if( !function_exists('ggpc_charge') ){
 			CURLOPT_CUSTOMREQUEST => 'POST',
 			CURLOPT_POSTFIELDS => json_encode($postfields['charge']),
 		));
+		$result = json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['result_code'=>$result_code,'result'=>$result];
+	}
+}
+if( !function_exists('ggpc_refund') ){
+	function ggpc_refund($charge_id,$access_token){
+		$params_api = ggpc_api_connect();
+		$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/charges/'.$charge_id.'/galaxPayId/reverse',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'PUT',
+			//CURLOPT_POSTFIELDS =>'[]',
+			CURLOPT_HTTPHEADER => array(
+			  'Authorization: Bearer '.$access_token,
+			  'Content-Type: application/json'
+			),
+		  ));
 		$result = json_decode(curl_exec($curl),true);
 		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
@@ -135,17 +160,6 @@ if( !function_exists('ggpc_charge_verify') ){
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-if( !function_exists('ggpc_get_string_between') ){
-	function ggpc_get_string_between($string, $start, $end){
-		$string = " ".$string;
-		$ini = strpos($string,$start);
-		if ($ini == 0) return "";
-		$ini += strlen($start);   
-		$len = strpos($string,$end,$ini) - $ini;
-		return substr($string,$ini,$len);
-	}
-}
-
 if( !function_exists('ggpc_charge_capture') ){
 	function ggpc_charge_capture($charge_id,$access_token){
 		$params_api = ggpc_api_connect();
@@ -168,7 +182,7 @@ if( !function_exists('ggpc_charge_capture') ){
 		$result = json_decode(curl_exec($curl),true);
 		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
-		return ['result_code'=>$response_code,'result'=>$result];
+		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
 
@@ -198,6 +212,16 @@ if( !function_exists('ggpc_card_create') ){
 	}
 }
 */
+if( !function_exists('ggpc_get_string_between') ){
+	function ggpc_get_string_between($string, $start, $end){
+		$string = " ".$string;
+		$ini = strpos($string,$start);
+		if ($ini == 0) return "";
+		$ini += strlen($start);   
+		$len = strpos($string,$end,$ini) - $ini;
+		return substr($string,$ini,$len);
+	}
+}
 if( !function_exists('ggpc_card_add') ){
 	function ggpc_card_add($card,$pay_method_id){
 		try {
