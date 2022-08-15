@@ -13,6 +13,19 @@ add_hook('ClientAreaPage', 1, function($vars) {
 	}
 	return;
 });
+add_hook('ClientAreaPageViewInvoice', 1, function($vars){
+	if($_REQUEST['ggpcerror']){
+		echo '<pre style="height:250px;">',print_r($vars),'</pre>';
+		unset($_LANG['invoicepaymentfailedconfirmation'] );
+		$_LANG['invoicepaymentfailedconfirmation'] = $_REQUEST['ggpcerror'];
+		$vars['errormessage'] = $_REQUEST['ggpcerror'];
+		$vars['errorshtml'] = $_REQUEST['ggpcerror'];
+		return [
+			'errorshtml'=>$_REQUEST['ggpcerror'],
+			'msg'=>$_REQUEST['ggpcerror'],
+		];
+	}
+});
 add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 	$params = getGatewayVariables('gofasgalaxpaycartao');
 	add_hook('ClientAreaFooterOutput', 1, function($vars){

@@ -36,7 +36,6 @@ if(!function_exists('ggpc_api_connect')){
 				'galax_hash' => $params['sandbox_galax_hash'],
 				'public_token' => $params['sandbox_public_token'],
 				'charge_url' => 'https://api.sandbox.cloud.galaxpay.com.br/v2',
-				//'sandbox' => true,
 				'galaxIdPartner' => '5473',
 				'galaxHashPartner' => '83Mw5u8988Qj6fZqS4Z8K7LzOo1j28S706R0BeFe',
 			];
@@ -47,8 +46,7 @@ if(!function_exists('ggpc_api_connect')){
 				'galax_id' => $params['galax_id'],									// $params_api['galax_id']
 				'galax_hash' => $params['galax_hash'],								// $params_api['galax_hash']
 				'public_token' => $params['public_token'],							// $params_api['public_token']
-				'charge_url' => 'https://api.galaxpay.com.br/v2',					// $params_api['charge_url']
-				//'sandbox' => false,													// $params_api['sandbox']
+				'charge_url' => 'https://api.galaxpay.com.br/v2',					// $params_api['charge_url']												// $params_api['sandbox']
 				'galaxIdPartner' => '29009',										// $params_api['galaxIdPartner']
 				'galaxHashPartner' => 'U9F6YvKgI77gVqJ60kHk6qOd04RhLfN0YyJ8AfA6',	// $params_api['galaxHashPartner']
 			];
@@ -81,7 +79,6 @@ if( !function_exists('ggpc_get_token') ){
 		));
 		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		$result = json_decode(curl_exec($curl), true);
-		//$response = curl_exec($curl);
 		curl_close($curl);
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
@@ -136,82 +133,6 @@ if( !function_exists('ggpc_refund') ){
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-/*
-if( !function_exists('ggpc_charge_verify') ){
-	function ggpc_charge_verify($postfields){
-		$params_api = ggpc_api_connect();
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $params_api['charge_url'].'/transactions?galaxPayIds='.$postfields['galaxPayIds'].'&limit=1&startAt=0',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'GET',
-			CURLOPT_HTTPHEADER => array(
-			  'Authorization: Bearer '.$postfields['access_token']
-			),
-		));
-		$result = json_decode(curl_exec($curl),true);
-		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		return ['result_code'=>$result_code,'result'=>$result];
-	}
-}
-if( !function_exists('ggpc_charge_capture') ){
-	function ggpc_charge_capture($charge_id,$access_token){
-		$params_api = ggpc_api_connect();
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $params_api['charge_url'].'/charges/'.$charge_id.'/galaxPayId/capture',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'PUT',
-			//CURLOPT_POSTFIELDS =>'[]',
-			CURLOPT_HTTPHEADER => array(
-			  'Authorization: Bearer '.$access_token,
-			  'Content-Type: application/json'
-			),
-		  ));
-		$result = json_decode(curl_exec($curl),true);
-		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		return ['result_code'=>$result_code,'result'=>$result];
-	}
-}
-
-if( !function_exists('ggpc_card_create') ){
-	function ggpc_card_create($card_postfields,$access_token){
-		$params_api = ggpc_api_connect();
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $params_api['charge_url'].'/cards/'.$card_postfields['userid'].'/myId',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'POST',
-			CURLOPT_POSTFIELDS =>json_encode($card_postfields),
-			CURLOPT_HTTPHEADER => array(
-			  'Authorization: Bearer '.$access_token,
-			  'Content-Type: application/json'
-			),
-		  ));
-		$result = json_decode(curl_exec($curl),true);
-		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		return ['result_code'=>$result_code,'result'=>$result];
-	}
-}
-*/
 if( !function_exists('ggpc_get_string_between') ){
 	function ggpc_get_string_between($string, $start, $end){
 		$string = " ".$string;
@@ -240,7 +161,7 @@ if( !function_exists('ggpc_card_add') ){
 			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
 				$card['userid'],
 				'gofasgalaxpaycartao',
-				'000000000'.$card['cclastfour'],
+				'111111111111'.$card['cclastfour'],
 				$card['cardexp'],
 				$card['cardtype'],
 				NULL, //start date

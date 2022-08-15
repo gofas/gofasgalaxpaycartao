@@ -1,0 +1,32 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-gateways",
+  "name": "email",
+  "license": "proprietary",
+  "category": "gateway",
+  "description": {
+    "name": "Gofas Galaxpay Cartão",
+    "tagline": "Configure rule based notifications delivered by email.",
+    "long": "Setup advanced rule based notifications for events and triggers that matter to you and receive those notifications to one or more email addresses.",
+    "features": [
+      "Setup rule based events and triggers",
+      "Receive notifications by email"
+    ]
+  },
+  "logo": {
+    "filename": "logo.png"
+  },
+  "support": {
+    "homepage": "https:\/\/gofas.net\/", 
+    "learn_more": "https:\/\/gofas.net\/tour", 
+    "email": "support@gofas.net", 
+    "support_url": "https:\/\/support.gofas.net\/",
+    "docs_url": "https:\/\/docs.gofas.net\/Notifications"
+  },
+  "authors": [
+    {
+      "name": "WHMCS",
+      "homepage": "https:\/\/gofas.net\/"
+    }
+  ]
+}

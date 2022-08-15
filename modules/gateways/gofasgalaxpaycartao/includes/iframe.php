@@ -170,7 +170,7 @@ if($params['log']){
 		 'error'=>$error,
 	];
 	//if($log['POST']['cardnum']){
-		//$log['POST']['cardnum'] = 'xxxx xxxx xxxx '.$_POST['cclastfour'];
+		//$log['POST']['cardnum'] = '1111 1111 1111 '.$_POST['cclastfour'];
 	//}
 	//if($log['POST']['expiresAt']){
 		//$log['POST']['expiresAt'] = 'xxxx-xx';
@@ -205,7 +205,6 @@ if(!$error){
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
 if($error){
-	echo '<div style="background-color: #f2dede; border-color: #ebccd1; padding: 15px 15px 22px 15px; border-radius: 3px; position: absolute;top: 0;width: 100%;font-size: 16px;color: #a94442;text-align: center;font-family: Verdana, Thaoma, SANS-SERIF;line-height: 30px;">'.$error;
-	$invoice_page =$ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true';
-	echo '<br><a target="_top" class="btn btn-success btn-sm" href="'.$invoice_page.'">Voltar</a></div>';
+	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=yes&ggpcerror='.$error);
+	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
