@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.2.0
+ * @version		1.0.0
  */
 
 if( !defined('WHMCS')){ die(''); }
@@ -16,43 +16,9 @@ function gofasgalaxpaycartao_MetaData(){
         'APIVersion' => '1.1',
     );
 }
-
 function gofasgalaxpaycartao_config(){
-	$module_version = '0.2.0';
+	$module_version = '1.0.0';
 	$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
-	/*
-	if( !function_exists('ggpc_verifyInstall') ){
-	function ggpc_verifyInstall(){
-		if( !Capsule::schema()->hasTable('gofasgalaxpaycartao') ){
-    		try {
-				Capsule::schema()->create('gofasgalaxpaycartao', function($table){
-        			// card
-					$table->increments('id');
-					$table->string('api_mode');
-					$table->string('user_id');
-					$table->string('credit_card_id');
-					$table->string('pay_method_id');
-					$table->string('card_type');
-					$table->string('last_four');
-    			});
-			}
-			catch (\Exception $e){
-    			$error .= "Não foi possível criar a tabela do módulo no banco de dados: {$e->getMessage()}";
-			}
-		}
-		if(!$error){
-			return array('sucess'=>1);
-		}
-		elseif($error){
-			return array('error'=>$error);
-		}
-	}}
-	$verifyInstall = ggpc_verifyInstall();
-	
-	if($verifyInstall['error']){
-		$error = $verifyInstall['error'];
-	}
-	*/
 	$actual_link		= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	if( stripos( $actual_link, '/configgateways.php') ){
 		$whmcs_url__ = str_replace("\\",'/',(isset($_SERVER['HTTPS']) ? "https://" : "http://").$_SERVER['HTTP_HOST'].substr(getcwd(),strlen($_SERVER['DOCUMENT_ROOT'])));
@@ -161,9 +127,8 @@ function gofasgalaxpaycartao_config(){
 		'separator_1' => array(
 			'Description' => '
 			<div class="ggpc_separator" style="padding: 1px 15px 9px;">
-				<div style="width:158px; float: right; padding: 0px;">
-				<a target="_blank" href="https://gofas.net/ggpcc/"><img style=" width: 135px;margin: 0px 0px 15px 0px;" src="'.$whmcs_url.'/modules/gateways/gofasgalaxpaycartao/assets/img/gofas_software.png"></a>
-				<a target="_blank" href="https://app.galaxpay.com.br/abrir-conta?affiliateHash=34c8f0bb"><img style=" width: 150px;" src="'.$whmcs_url.'/modules/gateways/gofasgalaxpaycartao/assets/img/galaxpay_logo.png"></a>
+				<div style="float: right; padding: 0px;">
+				<a target="_blank" href="https://app.galaxpay.com.br/abrir-conta?affiliateHash=34c8f0bb"><img style=" width: 300px;" src="'.$whmcs_url.'/modules/gateways/gofasgalaxpaycartao/assets/img/gofasgalaxpaycartao.png"></a>
 				</div>
 				<div style="margin-left: 10px;">
 					<h4 style="padding-top: 5px;">Módulo Gofas Galax Pay - Cartão para WHMCS v'.$module_version.'</h4>
@@ -171,7 +136,6 @@ function gofasgalaxpaycartao_config(){
 					<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>.</p>
 					<p><a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API Galax Pay</a>.</p>
 					<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$admin_url.'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
-					<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$admin_url.'/configcustomfields.php">campo personalizado de cliente</a> para a data de nascimento. O módulo identifica os campos do perfil do cliente automaticamente.</p>
 				</div>
 			</div>',
 		),

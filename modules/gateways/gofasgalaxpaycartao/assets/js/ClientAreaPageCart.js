@@ -4,7 +4,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.2.0
+ * @version		1.0.0
  */
 
 function inputstorefunc_2(){

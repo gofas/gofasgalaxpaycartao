@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.2.0
+ * @version		1.0.0
  */
 // Require libraries needed for gateway module functions.
 require_once __DIR__ . '/../../../../init.php';
@@ -13,6 +13,7 @@ require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 use WHMCS\Database\Capsule;
 if($_POST and !$_POST['error'] ){
+	echo '<img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">';
 	require __DIR__.'/functions.php';
 	$params = getGatewayVariables('gofasgalaxpaycartao');
 	$params_api = ggpc_api_connect();
@@ -77,7 +78,7 @@ if($_POST and !$_POST['error'] ){
     		'PaymentMethodCreditCard'=> [
     		    'Card'=> $card,
     		    'preAuthorize'=> false,
-    		    'qtdInstallments'=> $_POST['installmentsnum']
+    		    'qtdInstallments'=> $_POST['installmentsnum'],
     		],
 		]
 	);
@@ -169,35 +170,33 @@ if($params['log']){
 		 'ggpc_card_del'=> $ggpc_card_del,
 		 'error'=>$error,
 	];
-	//if($log['POST']['cardnum']){
-		//$log['POST']['cardnum'] = '1111 1111 1111 '.$_POST['cclastfour'];
-	//}
-	//if($log['POST']['expiresAt']){
-		//$log['POST']['expiresAt'] = 'xxxx-xx';
-	//}
-	//if($log['POST']['cardexp']){
-		//$log['POST']['cardexp'] = 'xxxx';
-	//}
-	//if($log['POST']['cccvv']){
-		//$log['POST']['cccvv'] = 'xxx';
-	//}
-	//if($log['Postfields']['charge']['PaymentMethodCreditCard']['Card']['number']){
-		//$log['Postfields']['charge']['PaymentMethodCreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_POST['cclastfour'];
-	//}
-    //if($log['Postfields']['charge']['PaymentMethodCreditCard']['Card']['expiresAt']){
-		//$log['Postfields']['charge']['PaymentMethodCreditCard']['Card']['expiresAt'] = 'xxxx-xx';
-	//}
-	//if($log['Postfields']['charge']['PaymentMethodCreditCard']['Card']['cvv']){
-    	//$log['Postfields']['charge']['PaymentMethodCreditCard']['Card']['cvv']= 'xxx';
-	//}
-	//if($log['Charge']['result']['Charge']['Transactions']['0']['CreditCard']['Card']['number']){
-		//$log['Charge']['result']['Charge']['Transactions']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_POST['cclastfour'];
-	//}
-	//if($log['Charge']['result']['Charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number']){
-		//$log['Charge']['result']['Charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_POST['cclastfour'];
-	//}
-	
-	//echo '<pre style="height:250px;">',print_r([$log_request,$log_response]),'</pre>';
+	if($log['post']['cardnum']){
+		$log['post']['cardnum'] = '1111 1111 1111 '.$_post['cclastfour'];
+	}
+	if($log['post']['expiresAt']){
+		$log['post']['expiresAt'] = 'xxxx-xx';
+	}
+	if($log['post']['cardexp']){
+		$log['post']['cardexp'] = 'xxxx';
+	}
+	if($log['post']['cccvv']){
+		$log['post']['cccvv'] = 'xxx';
+	}
+	if($log['postfields']['charge']['PaymentMethodCreditCard']['Card']['number']){
+		$log['postfields']['charge']['PaymentMethodCreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
+	}
+    if($log['postfields']['charge']['PaymentMethodCreditCard']['Card']['expiresAt']){
+		$log['postfields']['charge']['PaymentMethodCreditCard']['Card']['expiresAt'] = 'xxxx-xx';
+	}
+	if($log['postfields']['charge']['PaymentMethodCreditCard']['Card']['cvv']){
+    	$log['postfields']['charge']['PaymentMethodCreditCard']['Card']['cvv']= 'xxx';
+	}
+	if($log['charge']['result']['charge']['Transactions']['0']['CreditCard']['Card']['number']){
+		$log['charge']['result']['charge']['Transactions']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
+	}
+	if($log['charge']['result']['charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number']){
+		$log['charge']['result']['charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
+	}
 	logModuleCall('gofasgalaxpaycartao', 'iframe_payment', ['module_version'=>ggpc_version(),'request'=>$log_request],'post',['response'=>$log_response],'replaceVars');
 }
 if(!$error){
@@ -205,6 +204,6 @@ if(!$error){
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
 if($error){
-	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=yes&ggpcerror='.$error);
+	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&ggpcerror='.$error);
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }

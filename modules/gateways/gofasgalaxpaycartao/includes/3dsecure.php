@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		0.2.0
+ * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
 function gofasgalaxpaycartao_3dsecure($params){
@@ -88,8 +88,7 @@ function gofasgalaxpaycartao_3dsecure($params){
 		</script>';
 		$htmlOutput = '<form method="post" action="' . $url . '">';
 		$htmlOutput .= '<input type="hidden" name="error" id="error" value="'.base64_encode($error).'" />';
-    	//$htmlOutput .= '<input type="hidden" name="invoiceid" id="invoiceid" value="'.$params['invoiceid'].'" />';
-		$htmlOutput .= '</form>';
+    	$htmlOutput .= '</form>';
 		return $htmlOutput;
 	}	
 }
