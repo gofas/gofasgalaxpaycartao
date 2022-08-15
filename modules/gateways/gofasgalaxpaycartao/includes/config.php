@@ -157,13 +157,6 @@ function gofasgalaxpaycartao_config(){
 			'Default' => '',
 			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax Hash</a>',
 		),
-		'public_token' => array(
-			'FriendlyName' => $opt_num++.'- Public Token<span class="ggpc_required">*</span>',
-			'Type' => 'text',
-			'Size' => '50',
-			'Default' => '',
-			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Obtenha em <a target="_blank" style="text-decoration:underline;" href="https://app.galaxpay.com.br/informacao-modulo/webservice/">configurações do módulo webservice</a>',
-		),
 		'separator_3' => array(
 			'Description' => '<h2>Credenciais API - Testes</h2>',
 		),
@@ -181,13 +174,6 @@ function gofasgalaxpaycartao_config(){
 			'Size' => '50',
 			'Default' => '',
 			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax Hash</a>',
-		),
-		'sandbox_public_token' => array(
-			'FriendlyName' => $opt_num++.'- Sandbox Public Token<span class="ggpc_required">*</span>',
-			'Type' => 'text',
-			'Size' => '50',
-			'Default' => '',
-			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Obtenha em <a target="_blank" style="text-decoration:underline;" href="https://app.galaxpay.com.br/informacao-modulo/webservice/">configurações do módulo webservice</a>',
 		),
 		// All others settings
 		'separator_4' => array(
@@ -213,14 +199,6 @@ function gofasgalaxpaycartao_config(){
 			'Type' => 'yesno',
 			'Default' => 'yes',
 			'Description' => 'Salva informações de diagnóstico em <a target="_blank" style="text-decoration: underline;" href="'.$admin_url.'/systemmodulelog.php">Utilitários > Logs > Log de Módulo</a>. Para funcionar, antes é necessário ativar o debug de módulo clicando em "Ativar Log de Debug". <a target="_blank" style="text-decoration: underline;" href="'.$admin_url.'/systemmodulelog.php">VER LOG</a>.',
-		),
-		// Notificar admin sobre erros
-		'emailonerror' => array(
-			'FriendlyName' => $opt_num++.'- Notificar admins',
-			'Type'          => 'dropdown',
-			'Default' 		=> '0',
-            'Options'       => $tblticketdepartments,
-			'Description' => 'Escolha o departamento de suporte que receberá notificação por email quando houver erros ao gerar cobranças',
 		),
 		// fee
 		'fee' => array(
