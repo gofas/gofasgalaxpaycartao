@@ -97,6 +97,7 @@ if( !function_exists('ggpc_charge') ){
 			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 			CURLOPT_HTTPHEADER => array(
 			  'Authorization: Bearer '.$postfields['access_token'],
+			  'AuthorizationPartner: '.base64_encode($params_api['galaxIdPartner'].':'. $params_api['galaxHashPartner']),
 			  'Content-Type: application/json'
 			),
 			CURLOPT_CUSTOMREQUEST => 'POST',
@@ -124,6 +125,7 @@ if( !function_exists('ggpc_refund') ){
 			//CURLOPT_POSTFIELDS =>'[]',
 			CURLOPT_HTTPHEADER => array(
 			  'Authorization: Bearer '.$access_token,
+			  'AuthorizationPartner: '.base64_encode($params_api['galaxIdPartner'].':'. $params_api['galaxHashPartner']),
 			  'Content-Type: application/json'
 			),
 		  ));
