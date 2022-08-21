@@ -1,5 +1,5 @@
 /**
- * Módulo Galax Pay Cartão para WHMCS
+ * Módulo GalaxPay Cartão para WHMCS
  * @copyright	2022 Gofas Software
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340

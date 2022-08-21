@@ -1,6 +1,6 @@
 <?php
 /**
- * Módulo Galax Pay Cartão para WHMCS
+ * Módulo GalaxPay Cartão para WHMCS
  * @copyright	2022 Gofas Software
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
@@ -12,130 +12,36 @@ if( !defined('WHMCS')){ die(''); }
 use WHMCS\Database\Capsule;
 function gofasgalaxpaycartao_MetaData(){
     return array(
-        'DisplayName' => 'Gofas Galax Pay - Cartão',
+        'DisplayName' => 'Gofas GalaxPay - Cartão',
         'APIVersion' => '1.1',
     );
 }
 function gofasgalaxpaycartao_config(){
+	require __DIR__.'/functions.php';
 	$module_version = '1.0.0';
-	$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
-	$actual_link		= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-	if( stripos( $actual_link, '/configgateways.php') ){
-		$whmcs_url__ = str_replace("\\",'/',(isset($_SERVER['HTTPS']) ? "https://" : "http://").$_SERVER['HTTP_HOST'].substr(getcwd(),strlen($_SERVER['DOCUMENT_ROOT'])));
-		$admin_url = $whmcs_url__.'/';
-		$vtokens = explode('/', $actual_link);
-		$whmcs_admin_path = '/'.$vtokens[sizeof($vtokens)-2].'/';
-		$whmcs_url = str_replace( $whmcs_admin_path, '', $admin_url).'/';
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
-			$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
-			$ggpcwhmcsurl_created_at			= $ggpcwhmcsurl_->created_at;
-		}
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsadminurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsadminurl_ ){
-			$ggpcwhmcsadminurl				= $ggpcwhmcsadminurl_->value;
-			$ggpcwhmcsadminurl_created_at	= $ggpcwhmcsadminurl_->created_at;
-		}
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsadminpath') -> get( array( 'value','created_at') ) as $ggpcwhmcsadminpath_ ){
-			$ggpcwhmcsadminpath				= $ggpcwhmcsadminpath_->value;
-			$ggpcwhmcsadminpath_created_at	= $ggpcwhmcsadminpath_->created_at;
-		}
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpc_version') -> get( array( 'value','created_at') ) as $ggpc_version_ ){
-			$ggpc_version				= $ggpc_version_->value;
-			$ggpc_version_created_at	= $ggpc_version_->created_at;
-		}
-		if( !$ggpc_version ){
-			try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpc_version', 'value' =>$module_version, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){ $e->getMessage(); }
-		}
-		if( $ggpc_version and (string)$ggpc_version !== (string)$module_version){
-			try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpc_version')->update(array('value' => $module_version, 'created_at' =>  $ggpc_version_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){$e->getMessage();}
-		}
-		if( !$ggpcwhmcsurl ){
-			try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsurl', 'value' => $whmcs_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){ $e->getMessage(); }
-			try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsadminurl', 'value' => $admin_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){ $e->getMessage(); }
-			try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsadminpath', 'value' => $whmcs_admin_path, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){ $e->getMessage(); }
-		}
-		if( $ggpcwhmcsurl and ($whmcs_url !== $ggpcwhmcsurl) ){
-			try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpcwhmcsurl')->update(array('value' => $whmcs_url, 'created_at' =>  $ggpcwhmcsurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){$e->getMessage();}
-		}
-		if( $ggpcwhmcsadminurl and ($admin_url !== $ggpcwhmcsadminurl) ){
-			try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpcwhmcsadminurl')->update(array('value' => $admin_url, 'created_at' =>  $ggpcwhmcsadminurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){$e->getMessage();}
-		}
-		if( $ggpcwhmcsadminpath and ($whmcs_admin_path !== $ggpcwhmcsadminpath) ){
-			try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpcwhmcsadminpath')->update(array('value' => $whmcs_admin_path, 'created_at' =>  $ggpcwhmcsadminpath_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
-			catch (\Exception $e){$e->getMessage();}
-		}
-	}
-	if( !function_exists('ggpc_verify_module_updates') ){
-	function ggpc_verify_module_updates($page_id, $referer,$module_version){
-   		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version;
-    	$curl = curl_init();
-    	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
-    	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
-    	curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-    	curl_setopt($curl, CURLOPT_URL, $query);
-		$result = curl_exec($curl);
-    	$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		return array(
-			'http_status' => $http_status,
-			'result' => $result,
-		);
-	}}
-	$available_update_ = ggpc_verify_module_updates('14641',$whmcs_url,$module_version);
-	if( (int)$available_update_['http_status'] === 200 ){
-		$available_update = $available_update_['result'];
-		$available_update_int = (int)preg_replace("/[^0-9]/", "", $available_update);
-	}
-	else {
-		$available_update_int = 000;
-	}
-	if( $available_update_int === $module_version_int ){
-		$available_update_message = '<p style="color: green"><i class="fas fa-check-square"></i> Você está executando a versão mais recente do módulo.</p>';
-	}
-	if( $available_update_int > $module_version_int ){
-		$available_update_message = '<p style="font-size: 14px; color: red;"><i class="fas fa-exclamation-triangle"></i> Atualização disponível, verifique a <a style="color:#CC0000;text-decoration:underline;" href="https://gofas.net/?p=14641" target="_blank">versão '.$available_update.'</a>';
-	}
-	if( $available_update_int < $module_version_int ){
-		$available_update_message = '<p style="font-size: 14px; color: orange;"><i class="fas fa-exclamation-triangle"></i> Você está executando uma versão Beta desse módulo.<br>Não recomendamos o uso dessa versão em produção.<br>Baixar versão estável: <a style="color:#CC0000;text-decoration:underline;" href="https://gofas.net/?p=14641" target="_blank">v'.$available_update.'</a>';
-	}
-	if( $available_update_int === 000 ){
-		$available_update_message = '';
-	}
-	$tbladmins = array();
-	foreach( Capsule::table('tbladmins') -> get() as $tbladmins_ ){
-		$tbladmins[$tbladmins_->id] = $tbladmins_->id.' - '.$tbladmins_->firstname.' '.$tbladmins_->lastname.' ('.$tbladmins_->username.')';
-	}
-	$tblticketdepartments = array();
-	$tblticketdepartments[] = '';
-	foreach( Capsule::table('tblticketdepartments') -> get() as $tblticketdepartments_ ){
-		$tblticketdepartments_id			= $tblticketdepartments_->id;
-		$tblticketdepartments_name			= $tblticketdepartments_->name;
-		$tblticketdepartments[]				= $tblticketdepartments_id.' - '.$tblticketdepartments_name;
-	}
+	$whmcs_url = ggpc_whmcs_url();
+	$check_updates = ggpc_verify_module_updates('14641',$whmcs_url['url'],$module_version);
+	$tbladmins = ggpc_tbladmins();
+	//$tblticketdepartments = ggpc_tblticketdepartments();
+	
 	$opt_num = 1;
 	$renderize = array(
 		'FriendlyName' => array(
 			'Type' => 'System',
-			'Value' => 'Gofas Galax Pay - Cartão',
+			'Value' => 'Gofas GalaxPay - Cartão',
 		),
 		'separator_1' => array(
 			'Description' => '
 			<div class="ggpc_separator" style="padding: 1px 15px 9px;">
 				<div style="float: right; padding: 0px;">
-				<a target="_blank" href="https://app.galaxpay.com.br/abrir-conta?affiliateHash=34c8f0bb"><img style=" width: 300px;" src="'.$whmcs_url.'/modules/gateways/gofasgalaxpaycartao/assets/img/gofasgalaxpaycartao.png"></a>
+				<iframe frameborder="0" width="300" height="150" src="https://gofas.net/cliente/gofas/updates/?embed=14641"></iframe>
 				</div>
 				<div style="margin-left: 10px;">
-					<h4 style="padding-top: 5px;">Módulo Gofas Galax Pay - Cartão para WHMCS v'.$module_version.'</h4>
-					'.$available_update_message.'
-					<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>.</p>
-					<p><a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API Galax Pay</a>.</p>
-					<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$admin_url.'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
+					<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay - Cartão para WHMCS v'.$module_version.'</h4>
+					'.$check_updates['message'].'
+					<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>
+					| <a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API GalaxPay</a></p>
+					<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$whmcs_url['admin_url'].'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
 				</div>
 			</div>',
 		),
@@ -198,7 +104,7 @@ function gofasgalaxpaycartao_config(){
 			'FriendlyName' => $opt_num++.'- Salvar Logs',
 			'Type' => 'yesno',
 			'Default' => 'yes',
-			'Description' => 'Salva informações de diagnóstico em <a target="_blank" style="text-decoration: underline;" href="'.$admin_url.'/systemmodulelog.php">Utilitários > Logs > Log de Módulo</a>. Para funcionar, antes é necessário ativar o debug de módulo clicando em "Ativar Log de Debug". <a target="_blank" style="text-decoration: underline;" href="'.$admin_url.'/systemmodulelog.php">VER LOG</a>.',
+			'Description' => 'Salva informações de diagnóstico em <a target="_blank" style="text-decoration: underline;" href="'.$whmcs_url['admin_url'].'/systemmodulelog.php">Utilitários > Logs > Log de Módulo</a>. Para funcionar, antes é necessário ativar o debug de módulo clicando em "Ativar Log de Debug". <a target="_blank" style="text-decoration: underline;" href="'.$whmcs_url['admin_url'].'/systemmodulelog.php">VER LOG</a>.',
 		),
 		// fee
 		'fee' => array(
@@ -258,7 +164,7 @@ function gofasgalaxpaycartao_config(){
 			<p style="font-size: 11px;">
 			Ao utilizar esse módulo você concorda com nosso <a style="text-decoration:underline;" target="_blank" title="↗ Contrato de licença de uso de software" href="https://gofas.net/?p=9340">contrato de licença de uso de software</a>.
 			</p>
-			'.$available_update_message.'
+			'.$check_updates['message'].'
 			</div>',
 		),
 	);
