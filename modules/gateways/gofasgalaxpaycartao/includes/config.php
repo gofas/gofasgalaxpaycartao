@@ -22,7 +22,7 @@ function gofasgalaxpaycartao_config(){
 		$module_version = '1.0.0';
 		$whmcs_url = ggpc_whmcs_url();
 		$check_updates = ggpc_verify_module_updates('14641',$whmcs_url['url'],$module_version);
-		$embed = ggpc_get_embed('14641',$whmcs_url['url'],$module_version);
+		//$embed = ggpc_get_embed('14641',$whmcs_url['url'],$module_version);
 		$tbladmins = ggpc_tbladmins();
 		//$tblticketdepartments = ggpc_tblticketdepartments();
 		
@@ -36,7 +36,7 @@ function gofasgalaxpaycartao_config(){
 				'Description' => '
 				<div class="ggpc_separator" style="padding: 1px 15px 9px;">
 					<div style="float: right; padding: 0px;">
-					'.$embed['embed'].'
+					'.ggpc_decrypt($check_updates['check']).'
 					</div>
 					<div style="margin-left: 10px;">
 						<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay - Cartão para WHMCS v'.$module_version.'</h4>

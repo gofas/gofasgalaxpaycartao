@@ -456,12 +456,27 @@ if( !function_exists('ggpc_get_version') ){
 		return ['version'=>$available_version,'http_code'=>$http_status];
 	}
 }
-if( !function_exists('ggpc_verify_module_updates') ){
+if(!function_exists('ggpc_encrypt')){
+	function ggpc_encrypt($q) {
+	    $encryptionMethod = "AES-256-CBC";
+		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
+	    return openssl_encrypt($q, $encryptionMethod, $secretHash);
+	}
+}
+if(!function_exists('ggpc_decrypt')){
+	function ggpc_decrypt($q){
+		$encryptionMethod = "AES-256-CBC";
+		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
+	    return openssl_decrypt($q, $encryptionMethod, $secretHash);
+	}
+}
+if(!function_exists('ggpc_verify_module_updates')){
 	function ggpc_verify_module_updates($page_id,$referer,$module_version){
 		foreach( Capsule::table('tblconfiguration')->where('setting','=','ggpc_version')->get(['value','created_at','updated_at']) as $version_ ){
 			$version		= json_decode($version_->value, true);
 			$local_version	= $version['local_version'];
 			$last_version	= $version['last_version'];
+			$embed			= $version['check'];
 			$created_at		= $version_->created_at;
 			$updated_at		= $version_->updated_at;
 			//$available_version	= (int)preg_replace("/[^0-9]/","",$version['last_version']);
@@ -469,6 +484,8 @@ if( !function_exists('ggpc_verify_module_updates') ){
 		///// Get
 		if(!$version){
 			$get_version = ggpc_get_version($page_id,$referer,$module_version);
+			$get_embed	 = ggpc_get_embed($page_id,$referer,$module_version);
+			
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
 			}
@@ -478,6 +495,7 @@ if( !function_exists('ggpc_verify_module_updates') ){
 		}
 		if($version and strtotime($updated_at) < strtotime("-1 day")){
 			$get_version = ggpc_get_version($page_id,$referer,$module_version);
+			$get_embed	 = ggpc_get_embed($page_id,$referer,$module_version);
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
 			}
@@ -487,6 +505,7 @@ if( !function_exists('ggpc_verify_module_updates') ){
 		}
 		if($version and (string)$module_version !== (string)$local_version){
 			$get_version = ggpc_get_version($page_id,$referer,$module_version);
+			$get_embed	 = ggpc_get_embed($page_id,$referer,$module_version);
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
 			}
@@ -498,9 +517,10 @@ if( !function_exists('ggpc_verify_module_updates') ){
 			$available_version = $last_version;
 		}
 		// insert
-		if(!$version and $get_version['version']){
+		if(!$version and $get_version['version'] and $get_embed['embed']){
 			$local_version = $module_version;
 			$last_version = $get_version['version'];
+			$embed		  = ggpc_encrypt($get_embed['embed']);
 			$created_at		= date("Y-m-d H:i:s");
 			$updated_at		= date("Y-m-d H:i:s");
 
@@ -508,7 +528,8 @@ if( !function_exists('ggpc_verify_module_updates') ){
 				'setting' => 'ggpc_version',
 				'value' => json_encode([
 					'local_version'=>$module_version,
-					'last_version'=>$get_version['version']
+					'last_version'=>$get_version['version'],
+					'check'=>ggpc_encrypt($get_embed['embed'])
 				]),
 				'created_at' => $created_at,
 				'updated_at' => $updated_at
@@ -519,7 +540,7 @@ if( !function_exists('ggpc_verify_module_updates') ){
 			}
 		}
 		// update
-		if($version and $get_version['version'] and strtotime($updated_at) < strtotime("-1 day") and (
+		if($version and $get_version['version'] and $get_embed['embed'] and strtotime($updated_at) < strtotime("-1 day") and (
 			$available_version !== $module_version ||
 			$local_version !== $module_version ||
 			$last_version !== $available_version
@@ -528,7 +549,8 @@ if( !function_exists('ggpc_verify_module_updates') ){
 				Capsule::table('tblconfiguration')->where('setting','ggpc_version')->update([
 					'value' => json_encode([
 						'local_version'=>$module_version,
-						'last_version'=>$available_version
+						'last_version'=>$available_version,
+						'check'=>ggpc_encrypt($get_embed['embed'])
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -539,12 +561,13 @@ if( !function_exists('ggpc_verify_module_updates') ){
 			}
 		}
 		// update
-		if($version and $get_version['version'] and (string)$local_version !== (string)$module_version){
+		if($version and $get_version['version'] and $get_embed['embed'] and (string)$local_version !== (string)$module_version){
 			try {
 				Capsule::table('tblconfiguration')->where('setting','ggpc_version')->update([
 					'value' => json_encode([
 						'local_version'=>$module_version,
-						'last_version'=>$available_version
+						'last_version'=>$available_version,
+						'check'=>ggpc_encrypt($get_embed['embed'])
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -569,6 +592,7 @@ if( !function_exists('ggpc_verify_module_updates') ){
 			'version'=>$version,
 			'get_version'=>$get_version,
 			'message' => $message,
+			'check'=> $embed,
 			'error' => $error,
 		];
 	}
