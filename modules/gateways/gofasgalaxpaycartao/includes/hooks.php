@@ -126,7 +126,7 @@ box-shadow: rgba(255,255,255, 0.75) 1.5em 0 0 0, rgba(255,255,255, 0.75) 1.1em 1
   }
 }	
 		</style>';
-		echo '<div class="loading">Loading&#8230;</div>';
+		echo '<div class="loading">Carregando&#8230;</div>';
 	}
 	
 	return;

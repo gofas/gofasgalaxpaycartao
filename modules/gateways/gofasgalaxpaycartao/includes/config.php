@@ -17,156 +17,159 @@ function gofasgalaxpaycartao_MetaData(){
     );
 }
 function gofasgalaxpaycartao_config(){
-	require __DIR__.'/functions.php';
-	$module_version = '1.0.0';
-	$whmcs_url = ggpc_whmcs_url();
-	$check_updates = ggpc_verify_module_updates('14641',$whmcs_url['url'],$module_version);
-	$tbladmins = ggpc_tbladmins();
-	//$tblticketdepartments = ggpc_tblticketdepartments();
-	
-	$opt_num = 1;
-	$renderize = array(
-		'FriendlyName' => array(
-			'Type' => 'System',
-			'Value' => 'Gofas GalaxPay - Cartão',
-		),
-		'separator_1' => array(
-			'Description' => '
-			<div class="ggpc_separator" style="padding: 1px 15px 9px;">
-				<div style="float: right; padding: 0px;">
-				<iframe frameborder="0" width="300" height="150" src="https://gofas.net/cliente/gofas/updates/?embed=14641"></iframe>
-				</div>
-				<div style="margin-left: 10px;">
-					<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay - Cartão para WHMCS v'.$module_version.'</h4>
-					'.$check_updates['message'].'
-					<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>
-					| <a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API GalaxPay</a></p>
-					<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$whmcs_url['admin_url'].'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
-				</div>
-			</div>',
-		),
-		'separator_2' => array(
-			'Description' => '<h2>Credenciais API - Produção</h3>',
-		),
-		// Secret Token
-		'galax_id' => array(
-			'FriendlyName' => $opt_num++.'- Galax ID<span class="ggpc_required">*</span>',
-			'Type' => 'text',
-			'Size' => '50',
-			'Default' => '',
-			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax ID | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax ID</a>',
-		),
-		'galax_hash' => array(
-			'FriendlyName' => $opt_num++.'- Galax Hash<span class="ggpc_required">*</span>',
-			'Type' => 'text',
-			'Size' => '50',
-			'Default' => '',
-			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax Hash</a>',
-		),
-		'separator_3' => array(
-			'Description' => '<h2>Credenciais API - Testes</h2>',
-		),
-		'sandbox_galax_id' => array(
-			'FriendlyName' => $opt_num++.'- Sandbox Galax ID<span class="ggpc_required">*</span>',
-			'Type' => 'text',
-			'Size' => '50',
-			'Default' => '',
-			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax ID | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax ID</a>',
-		),
-		// Sandbox Secret Token
-		'sandbox_galax_hash' => array(
-			'FriendlyName' => $opt_num++.'- Sandbox Galax Hash<span class="ggpc_required">*</span>',
-			'Type' => 'text',
-			'Size' => '50',
-			'Default' => '',
-			'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax Hash</a>',
-		),
-		// All others settings
-		'separator_4' => array(
-			'Description' => '<h2>Configurações gerais</h2>',
-		),
-		'admin' => array(
-			'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="ggpc_required">*</span>',
-			'Type'          => 'dropdown',
-			'Default' 		=> key(reset($tbladmins)),
-            'Options'       => $tbladmins,
-			'Description' => 'Defina o administrador com permissões para utilizar a API interna do WHMCS.',
-		),
-		// Sandbox
-		'sandbox' => array(
-			'FriendlyName' => $opt_num++.'- <i>Sandbox</i>',
-			'Type' => 'yesno',
-			'Default' => 'yes',
-			'Description' => 'Ative essa opção para gerar cobranças em modo de testes.',
-		),
-		// Log
-		'log' => array(
-			'FriendlyName' => $opt_num++.'- Salvar Logs',
-			'Type' => 'yesno',
-			'Default' => 'yes',
-			'Description' => 'Salva informações de diagnóstico em <a target="_blank" style="text-decoration: underline;" href="'.$whmcs_url['admin_url'].'/systemmodulelog.php">Utilitários > Logs > Log de Módulo</a>. Para funcionar, antes é necessário ativar o debug de módulo clicando em "Ativar Log de Debug". <a target="_blank" style="text-decoration: underline;" href="'.$whmcs_url['admin_url'].'/systemmodulelog.php">VER LOG</a>.',
-		),
-		// fee
-		'fee' => array(
-			'FriendlyName' => $opt_num++.'- Tarifa',
-			'Type' => 'text',
-			'Size' => '10',
-			'Default' => '5',
-			'Description' => 'Insira o valor em % pago por transação para preencher o campo <i>fee</i> das faturas',
-		),
-		// minimum amount
-		'minimunamount' => array(
-			'FriendlyName' => $opt_num++.'- Valor mínimo',
-			'Type' => 'text',
-			'Size' => '10',
-			'Default' => '5',
-			'Description' => 'Insira o valor total mínimo da fatura para permitir pagamento via Cartão. Formato: Decimal, separado por ponto. Maior ou igual a sua tarifa (a partir de 2.50) e menor ou igual a 1000000.00.',
-		),
-		// Permitir Parcelamento
-		'installments' => array(
-			'FriendlyName' => $opt_num++.'- Permitir parcelamento',
-			'Type' => 'yesno',
-			'Default' => 'yes',
-			'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Com essa opção ativada seu cliente verá opções de parcelamento na fatura quando aplicável.',
-		),
-		// valor mínimo para parcelamento
-		'minimunamountinstallments' => array(
-			'FriendlyName' => $opt_num++.'- Valor mínimo para parcelamento',
-			'Type' => 'text',
-			'Size' => '10',
-			'Default' => '1000',
-			'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Insira o valor mínimo da fatura para permitir Pagamento Parcelado.',
-		),
-		// máximo de parcelas
-        'maxinstallments' => array(
-            'FriendlyName' =>  $opt_num++.'- Máximo de parcelas',
-            'Type' => 'dropdown',
-			'Default' => '2',
-            'Options' => array(
-                '2' => 'Até 2 parcelas',
-                '3' => 'Até 3 parcelas',
-                '4' => 'Até 4 parcelas',
-				'5' => 'Até 5 parcelas',
-				'6' => 'Até 6 parcelas',
-				'7' => 'Até 7 parcelas',
-				'8' => 'Até 8 parcelas',
-				'9' => 'Até 9 parcelas',
-				'10' => 'Até 10 parcelas',
-				'11' => 'Até 11 parcelas',
-				'12' => 'Até 12 parcelas',
-            ),
-            'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Selecione o número máximo de parcelas permitido.</span>',
-        ),
-	);
-	$footer = array('footer' => array(
-			'Description' => '<div class="ggpc_section">
-			<p>&copy; '.date('Y').' <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net">Gofas.net</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net/?p=14641#changelog">'.$module_version.'</a> | <a  style="text-decoration:underline;"target="_blank" title="↗ Documentação" href="https://gofas.net/?p=14641">Documentação</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Fórum de Suporte" href="https://gofas.net/foruns/">Suporte</a>.</p>
-			<p style="font-size: 11px;">
-			Ao utilizar esse módulo você concorda com nosso <a style="text-decoration:underline;" target="_blank" title="↗ Contrato de licença de uso de software" href="https://gofas.net/?p=9340">contrato de licença de uso de software</a>.
-			</p>
-			'.$check_updates['message'].'
-			</div>',
-		),
-	);
+	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
+		require __DIR__.'/functions.php';
+		$module_version = '1.0.0';
+		$whmcs_url = ggpc_whmcs_url();
+		$check_updates = ggpc_verify_module_updates('14641',$whmcs_url['url'],$module_version);
+		$embed = ggpc_get_embed('14641',$whmcs_url['url'],$module_version);
+		$tbladmins = ggpc_tbladmins();
+		//$tblticketdepartments = ggpc_tblticketdepartments();
+		
+		$opt_num = 1;
+		$renderize = array(
+			'FriendlyName' => array(
+				'Type' => 'System',
+				'Value' => 'Gofas GalaxPay - Cartão',
+			),
+			'separator_1' => array(
+				'Description' => '
+				<div class="ggpc_separator" style="padding: 1px 15px 9px;">
+					<div style="float: right; padding: 0px;">
+					'.$embed['embed'].'
+					</div>
+					<div style="margin-left: 10px;">
+						<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay - Cartão para WHMCS v'.$module_version.'</h4>
+						'.$check_updates['message'].'
+						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>
+						| <a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API GalaxPay</a></p>
+						<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$whmcs_url['admin_url'].'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
+					</div>
+				</div>',
+			),
+			'separator_2' => array(
+				'Description' => '<h2>Credenciais API - Produção</h3>',
+			),
+			// Secret Token
+			'galax_id' => array(
+				'FriendlyName' => $opt_num++.'- Galax ID<span class="ggpc_required">*</span>',
+				'Type' => 'text',
+				'Size' => '50',
+				'Default' => '',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax ID | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax ID</a>',
+			),
+			'galax_hash' => array(
+				'FriendlyName' => $opt_num++.'- Galax Hash<span class="ggpc_required">*</span>',
+				'Type' => 'text',
+				'Size' => '50',
+				'Default' => '',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax Hash</a>',
+			),
+			'separator_3' => array(
+				'Description' => '<h2>Credenciais API - Testes</h2>',
+			),
+			'sandbox_galax_id' => array(
+				'FriendlyName' => $opt_num++.'- Sandbox Galax ID<span class="ggpc_required">*</span>',
+				'Type' => 'text',
+				'Size' => '50',
+				'Default' => '',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax ID | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax ID</a>',
+			),
+			// Sandbox Secret Token
+			'sandbox_galax_hash' => array(
+				'FriendlyName' => $opt_num++.'- Sandbox Galax Hash<span class="ggpc_required">*</span>',
+				'Type' => 'text',
+				'Size' => '50',
+				'Default' => '',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax Hash</a>',
+			),
+			// All others settings
+			'separator_4' => array(
+				'Description' => '<h2>Configurações gerais</h2>',
+			),
+			'admin' => array(
+				'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="ggpc_required">*</span>',
+				'Type'          => 'dropdown',
+				'Default' 		=> key(reset($tbladmins)),
+    	        'Options'       => $tbladmins,
+				'Description' => 'Defina o administrador com permissões para utilizar a API interna do WHMCS.',
+			),
+			// Sandbox
+			'sandbox' => array(
+				'FriendlyName' => $opt_num++.'- <i>Sandbox</i>',
+				'Type' => 'yesno',
+				'Default' => 'yes',
+				'Description' => 'Ative essa opção para gerar cobranças em modo de testes.',
+			),
+			// Log
+			'log' => array(
+				'FriendlyName' => $opt_num++.'- Salvar Logs',
+				'Type' => 'yesno',
+				'Default' => 'yes',
+				'Description' => 'Salva informações de diagnóstico em <a target="_blank" style="text-decoration: underline;" href="'.$whmcs_url['admin_url'].'/systemmodulelog.php">Utilitários > Logs > Log de Módulo</a>. Para funcionar, antes é necessário ativar o debug de módulo clicando em "Ativar Log de Debug". <a target="_blank" style="text-decoration: underline;" href="'.$whmcs_url['admin_url'].'/systemmodulelog.php">VER LOG</a>.',
+			),
+			// fee
+			'fee' => array(
+				'FriendlyName' => $opt_num++.'- Tarifa',
+				'Type' => 'text',
+				'Size' => '10',
+				'Default' => '5',
+				'Description' => 'Insira o valor em % pago por transação para preencher o campo <i>fee</i> das faturas',
+			),
+			// minimum amount
+			'minimunamount' => array(
+				'FriendlyName' => $opt_num++.'- Valor mínimo',
+				'Type' => 'text',
+				'Size' => '10',
+				'Default' => '5',
+				'Description' => 'Insira o valor total mínimo da fatura para permitir pagamento via Cartão. Formato: Decimal, separado por ponto. Maior ou igual a sua tarifa (a partir de 2.50) e menor ou igual a 1000000.00.',
+			),
+			// Permitir Parcelamento
+			'installments' => array(
+				'FriendlyName' => $opt_num++.'- Permitir parcelamento',
+				'Type' => 'yesno',
+				'Default' => 'yes',
+				'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Com essa opção ativada seu cliente verá opções de parcelamento na fatura quando aplicável.',
+			),
+			// valor mínimo para parcelamento
+			'minimunamountinstallments' => array(
+				'FriendlyName' => $opt_num++.'- Valor mínimo para parcelamento',
+				'Type' => 'text',
+				'Size' => '10',
+				'Default' => '1000',
+				'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Insira o valor mínimo da fatura para permitir Pagamento Parcelado.',
+			),
+			// máximo de parcelas
+    	    'maxinstallments' => array(
+    	        'FriendlyName' =>  $opt_num++.'- Máximo de parcelas',
+    	        'Type' => 'dropdown',
+				'Default' => '2',
+    	        'Options' => array(
+    	            '2' => 'Até 2 parcelas',
+    	            '3' => 'Até 3 parcelas',
+    	            '4' => 'Até 4 parcelas',
+					'5' => 'Até 5 parcelas',
+					'6' => 'Até 6 parcelas',
+					'7' => 'Até 7 parcelas',
+					'8' => 'Até 8 parcelas',
+					'9' => 'Até 9 parcelas',
+					'10' => 'Até 10 parcelas',
+					'11' => 'Até 11 parcelas',
+					'12' => 'Até 12 parcelas',
+    	        ),
+    	        'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Selecione o número máximo de parcelas permitido.</span>',
+    	    ),
+		);
+		$footer = array('footer' => array(
+				'Description' => '<div class="ggpc_section">
+				<p>&copy; '.date('Y').' <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net">Gofas.net</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net/?p=14641#changelog">'.$module_version.'</a> | <a  style="text-decoration:underline;"target="_blank" title="↗ Documentação" href="https://gofas.net/?p=14641">Documentação</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Fórum de Suporte" href="https://gofas.net/foruns/">Suporte</a>.</p>
+				<p style="font-size: 11px;">
+				Ao utilizar esse módulo você concorda com nosso <a style="text-decoration:underline;" target="_blank" title="↗ Contrato de licença de uso de software" href="https://gofas.net/?p=9340">contrato de licença de uso de software</a>.
+				</p>
+				'.$check_updates['message'].'
+				</div>',
+			),
+		);
+	}
 	return array_merge($renderize,$footer);
 }

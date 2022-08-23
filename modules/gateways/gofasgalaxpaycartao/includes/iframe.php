@@ -13,7 +13,7 @@ require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 use WHMCS\Database\Capsule;
 if($_POST and !$_POST['error'] ){
-	echo '<img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">';
+	//echo '<img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">';
 	require __DIR__.'/functions.php';
 	$params = getGatewayVariables('gofasgalaxpaycartao');
 	$params_api = ggpc_api_connect();
@@ -29,7 +29,8 @@ if($_POST and !$_POST['error'] ){
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
-	$amount = ((int)$_POST['amount'])*100;
+	//$amount = ((int)$_POST['amount'])*100;
+	$amount = (int)preg_replace("/[^0-9]/", "", $_POST['amount']);
 	// Cobrança avulsa
 	if($_POST['cardissuenum']){
 		$card = [
@@ -135,7 +136,7 @@ if($_POST and !$_POST['error'] ){
 			}
 		}
 	}
-	if( $charge['result']['error']){
+	if($charge['result']['error']){
 		if(!$_POST['cardissuenum']){
 			$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
 			if((string)$ggpc_card_del !== (string)'success'){
@@ -144,6 +145,9 @@ if($_POST and !$_POST['error'] ){
 		}
 		$error .= $charge['result']['error']['message'];
 		$error .= implode(', ',$charge['result']['error']['details']);
+	}
+	if($charge['result_code'] !== 200 ){
+		$error .= $charge['result_code'];
 	}
 }
 if($_POST['error']){
