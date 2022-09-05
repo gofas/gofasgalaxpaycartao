@@ -18,14 +18,12 @@ function gofasgalaxpaycartao_MetaData(){
 }
 function gofasgalaxpaycartao_config(){
 	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-		require __DIR__.'/functions.php';
 		$module_version = '1.0.0';
+		$module_page	= '14641';
+		require __DIR__.'/functions.php';
 		$whmcs_url = ggpc_whmcs_url();
-		$check_updates = ggpc_verify_module_updates('14641',$whmcs_url['url'],$module_version);
-		//$embed = ggpc_get_embed('14641',$whmcs_url['url'],$module_version);
+		$check_updates = ggpc_verify_module_updates($module_page,$whmcs_url['url'],$module_version);
 		$tbladmins = ggpc_tbladmins();
-		//$tblticketdepartments = ggpc_tblticketdepartments();
-		
 		$opt_num = 1;
 		$renderize = array(
 			'FriendlyName' => array(
