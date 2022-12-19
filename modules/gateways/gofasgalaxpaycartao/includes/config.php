@@ -88,7 +88,7 @@ function gofasgalaxpaycartao_config(){
 			'admin' => array(
 				'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="ggpc_required">*</span>',
 				'Type'          => 'dropdown',
-				'Default' 		=> key(reset($tbladmins)),
+				'Default' 		=> array_shift(array_values($tbladmins)),
     	        'Options'       => $tbladmins,
 				'Description' => 'Defina o administrador com permissões para utilizar a API interna do WHMCS.',
 			),
