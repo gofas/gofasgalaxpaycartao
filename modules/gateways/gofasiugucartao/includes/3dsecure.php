@@ -1,21 +1,21 @@
 <?php
 /**
- * Módulo GalaxPay Cartão para WHMCS
+ * Módulo iugu Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14641
+ * @see			https://gofas.net/?p=14946
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
-function gofasgalaxpaycartao_3dsecure($params){
+function gofasiugucartao_3dsecure($params){
 	define('CLIENTAREA', true);
 	require __DIR__.'/functions.php';
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
-		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
-		$ggpcwhmcsurl_created_at		= $ggpcwhmcsurl_->created_at;
+	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gicwhmcsurl') -> get( array( 'value','created_at') ) as $gicwhmcsurl_ ){
+		$gicwhmcsurl					= $gicwhmcsurl_->value;
+		$gicwhmcsurl_created_at		= $gicwhmcsurl_->created_at;
 	}
-    $url = $ggpcwhmcsurl.'/modules/gateways/gofasgalaxpaycartao/includes/iframe.php';
+    $url = $gicwhmcsurl.'/modules/gateways/gofasiugucartao/includes/iframe.php';
 	if( $params['amount'] >= $params['minimunamount']){
 		$Params = json_decode( json_encode($params), true);
 		$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
@@ -26,7 +26,7 @@ function gofasgalaxpaycartao_3dsecure($params){
 		elseif( $invoice_duedate < date('Y-m-d') and !$days_for_due ){
 			$billet_duedate			= date('Y-m-d', strtotime('+1 day'));	
 		}
-		$customer = ggpc_customer($params['clientdetails']['id']);
+		$customer = gic_customer($params['clientdetails']['id']);
 		$postfields = array(
 				'userid'=>$params['clientdetails']['id'],
 				'invoiceid'=>$params['invoiceid'],
@@ -62,7 +62,7 @@ function gofasgalaxpaycartao_3dsecure($params){
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
 			$htmlOutput .= '<input type="hidden" name="error" id="error" value="" />';
     		$htmlOutput .= '</form>';
-			$htmlOutput .= '<script type="text/javascript" src="https://js.galaxpay.com.br/checkout.min.js"></script>';
+			$htmlOutput .= '<script type="text/javascript" src="https://js.iugu.com.br/checkout.min.js"></script>';
 			if($params['sandbox']){
 				$environment = 'false';
 			}
@@ -79,10 +79,10 @@ function gofasgalaxpaycartao_3dsecure($params){
 	}
 	elseif( $params['amount'] < $params['minimunamount']){
 		$error .= 'O valor mínimo para utilizar esse método de pagamento é '.number_format( $params['minimunamount'] ,  2, ',', '.').'.';
-		$error .= '<br><a target="_top" style="color: #a94442;" href="'.$ggpcwhmcsurl.'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
-		$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
+		$error .= '<br><a target="_top" style="color: #a94442;" href="'.$gicwhmcsurl.'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
+		$invoice_page =json_encode($gicwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
 		$error .= '<script>
-		function ggpc_redir_to_invoice(){
+		function gic_redir_to_invoice(){
 			window.top.location.href='.$invoice_page.'
 		}
 		</script>';

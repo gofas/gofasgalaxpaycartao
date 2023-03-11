@@ -1,25 +1,25 @@
 @charset "UTF-8";
 /* CSS Document */
 
-.ggpc_section {
+.gic_section {
 	background: #dde9f9; padding: 10px 15px 1px;
 }
-.ggpc_separator {
+.gic_separator {
 	background: #dcdcdc; padding: 8px 15px 9px;
 }
-.ggpc_separator p {
+.gic_separator p {
 	font-size:12px;
 	margin: 0px 0px 5px 0px;
 }
-.ggpc_required {
+.gic_required {
 	color: #CC0000;
 	font-size: 20px;
 	line-height: 0;
 }
-.ggpc_required_txt {
+.gic_required_txt {
 	color: #CC0000;
 }
-.ggpc_optional_txt {
+.gic_optional_txt {
 	color: #02bb04;
 }
 #Payment-Gateway-Config-gofasboletofacil td.fieldlabel {

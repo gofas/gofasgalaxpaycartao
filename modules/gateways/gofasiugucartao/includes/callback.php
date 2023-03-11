@@ -1,8 +1,8 @@
 <?php
 /**
- * Módulo GalaxPay Cartão para WHMCS
+ * Módulo iugu Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14641
+ * @see			https://gofas.net/?p=14946
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
@@ -11,13 +11,13 @@ require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 
-$params = getGatewayVariables('gofasgalaxpaycartao');
+$params = getGatewayVariables('gofasiugucartao');
 if(!$params['type']){die("Module Not Activated");}
 if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['chargeCode']*/ ){
 	$invoice = localAPI('getinvoice',array('invoiceid'=>$_POST['chargeReference']),(int)$params['admin']);
 	if( (int)$invoice['invoiceid'] === (int)$_POST['chargeReference'] ){
-		if( !function_exists('ggpc_callback') ){
-			function ggpc_callback($charge_url,$postfields){
+		if( !function_exists('gic_callback') ){
+			function gic_callback($charge_url,$postfields){
     		$curl = curl_init();
 			$query = $charge_url;
 			curl_setopt($curl, CURLOPT_URL, $charge_url);
@@ -41,7 +41,7 @@ if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['ch
 			$charge_url = 'https://www.boletobancario.com/boletofacil/integration/api/v1/fetch-payment-details';
 		}
 		$postfields = array('paymentToken'=>$_POST['paymentToken'],'responseType'=>'json',);
-		$callback = json_decode(json_encode(ggpc_callback($charge_url, $postfields)), true);
+		$callback = json_decode(json_encode(gic_callback($charge_url, $postfields)), true);
 		if((int)$callback['success'] !== 1){
 			$error = $callback['errorMessage'];
 		}		
@@ -53,7 +53,7 @@ if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['ch
 			if($transIDend){
 				$transIDp				= end( $transIDend );
 				$transID_				= $transIDp['transid'];
-				if( strpos( $transID_, 'ggpcc') !== false and strpos( $transID_, $api_mode) !== false ){
+				if( strpos( $transID_, 'gicc') !== false and strpos( $transID_, $api_mode) !== false ){
 					$transID					= $transID_;
 				}
 				else {
@@ -74,8 +74,8 @@ if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['ch
 				'AddTransaction', 
 				array(
 					'invoiceid' => $_POST['chargeReference'],
-					'transid' => 'ggpcc-'.$callback['data']['payment']['charge']['code'].'-'.$api_mode.'-refund-'.$callback['data']['payment']['id'],
-					'paymentmethod' => 'gofasgalaxpaycartao',
+					'transid' => 'gicc-'.$callback['data']['payment']['charge']['code'].'-'.$api_mode.'-refund-'.$callback['data']['payment']['id'],
+					'paymentmethod' => 'gofasiugucartao',
 					'date' => date("d/m/Y"),
 					'description' => 'Pagamento reembolsado pelo portal de pagamento',
 					'amountin'=> - $callback['data']['payment']['charge']['amount'],
@@ -91,7 +91,7 @@ if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['ch
 											'transaction_id' => (int)$GetTransactions['transactions']['transaction']['0']['id'],
 											'transaction_date' => date('d/m/Y', strtotime($GetTransactions['transactions']['transaction']['0']['date'])),
 											'transaction_amount' => number_format( $GetTransactions['transactions']['transaction']['0']['amountin'],  2, ',', '.'),
-											'payment_method' => 'gofasgalaxpaycartao',
+											'payment_method' => 'gofasiugucartao',
 											'client_id' => $GetTransactions['transactions']['transaction']['0']['userid']
 										),
 									),
@@ -100,6 +100,6 @@ if( $_POST /*$_POST['paymentToken'] and $_POST['chargeReference'] and $_POST['ch
 	}
 
 	if($params['log']){
-		logModuleCall('gofasgalaxpaycartao','receive_callback',array('module_version'=>'1.2.2','POST'=>$_POST,'invoice'=>$invoice,'postfields'=>$postfields),'', array( 'error'=>$error, 'callback'=>$callback,'$GetTransactions'=>$GetTransactions,'$AddTransaction'=>$AddTransaction,'$SendEmail'=>$SendEmail, '$UpdateInvoice'=>$UpdateInvoice ) );
+		logModuleCall('gofasiugucartao','receive_callback',array('module_version'=>'1.2.2','POST'=>$_POST,'invoice'=>$invoice,'postfields'=>$postfields),'', array( 'error'=>$error, 'callback'=>$callback,'$GetTransactions'=>$GetTransactions,'$AddTransaction'=>$AddTransaction,'$SendEmail'=>$SendEmail, '$UpdateInvoice'=>$UpdateInvoice ) );
 	}
 }

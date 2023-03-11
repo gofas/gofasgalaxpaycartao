@@ -1,18 +1,18 @@
 {
   "schema": "1.0",
   "type": "whmcs-gateways",
-  "name": "gofasgalaxpaycartao",
+  "name": "gofasiugucartao",
   "license": "proprietary",
   "category": "payments",
   "description": {
-    "name": "Gofas GalaxPay Cartão",
+    "name": "Gofas iugu Cartão",
     "tagline": "Solução completa e segura para recebimentos via cartão de crédito diretamente no WHMCS."
   },
   "logo": {
     "filename": "/assets/img/logo.png"
   },
   "support": {
-    "docs_url": "https:\/\/gofas.net\/ggpc"
+    "docs_url": "https:\/\/gofas.net\/gic"
   },
   "authors": [
     {

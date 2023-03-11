@@ -1,8 +1,8 @@
 <?php
 /**
- * Módulo GalaxPay Cartão para WHMCS
+ * Módulo iugu Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14641
+ * @see			https://gofas.net/?p=14946
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
@@ -15,13 +15,13 @@ use WHMCS\Database\Capsule;
 if($_POST and !$_POST['error'] ){
 	//echo '<img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">';
 	require __DIR__.'/functions.php';
-	$params = getGatewayVariables('gofasgalaxpaycartao');
-	$params_api = ggpc_api_connect();
-	$customer = ggpc_customer($_POST['userid']);
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
-		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
+	$params = getGatewayVariables('gofasiugucartao');
+	$params_api = gic_api_connect();
+	$customer = gic_customer($_POST['userid']);
+	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gicwhmcsurl') -> get( array( 'value','created_at') ) as $gicwhmcsurl_ ){
+		$gicwhmcsurl					= $gicwhmcsurl_->value;
 	}
-	$access_token_ = ggpc_get_token();
+	$access_token_ = gic_get_token();
 	$access_token = $access_token_['result']['access_token'];
 	// Invoice Info
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$_POST['invoiceid'] ),(int)$params['admin']);
@@ -63,7 +63,7 @@ if($_POST and !$_POST['error'] ){
 			'myId'=> $_POST['invoiceid'].time(),
 			'value' => $amount,
 			'payday'=>date("Y-m-d"),
-			'payedOutsideGalaxPay' => false,
+			'payedOutsideiugu' => false,
 			'mainPaymentMethodId' => "creditcard",
 			'Customer' => [
 				'myId'=> $customer['id'],
@@ -83,7 +83,7 @@ if($_POST and !$_POST['error'] ){
     		],
 		]
 	);
-	$charge = ggpc_charge($postfields);
+	$charge = gic_charge($postfields);
 	// Capturado
 	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'captured'){
 		if( (int)$_POST['installmentsnum'] > 1 ){
@@ -94,16 +94,16 @@ if($_POST and !$_POST['error'] ){
 		}
 		//
 		$fee = (($_POST['amount'] * $params['fee']) / 100);
-		$ggpc_add_trans = ggpc_add_trans(
+		$gic_add_trans = gic_add_trans(
 			$_POST['userid'],
 			$_POST['invoiceid'],
 			$_POST['amount'],
 			$fee,
-			'ggpc-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
+			'gic-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
 			$trans_desc
 			);	
-		if($ggpc_add_trans['error']){
-			$error .= $ggpc_add_trans['error'];
+		if($gic_add_trans['error']){
+			$error .= $gic_add_trans['error'];
 		}
 		// save card
 		if((string)$_POST['storeCard'] === (string)'yes' and $charge['result']['Charge']['Transactions']['0']['CreditCard']['Card']['myId'] and !$_POST['cardissuenum']){
@@ -115,32 +115,32 @@ if($_POST and !$_POST['error'] ){
 				'cardissuenum'=>$charge['result']['Charge']['Transactions']['0']['CreditCard']['Card']['galaxPayId'],//$_POST['issuenumber'],
 				'myId'=> (string)((int)$_POST['pay_method_id']+1),
 			];
-			$ggpc_add_card = ggpc_card_add($card_to_add,$_POST['pay_method_id']);
-			if((string)$ggpc_add_card !== (string)'success'){
-				$error .= $ggpc_add_card;
+			$gic_add_card = gic_card_add($card_to_add,$_POST['pay_method_id']);
+			if((string)$gic_add_card !== (string)'success'){
+				$error .= $gic_add_card;
 			}
 		}
-		if(((string)$_POST['storeCard'] !== (string)'yes' || (string)$ggpc_add_card !== (string)'success') and !$_POST['cardissuenum']){
-			$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
-			if((string)$ggpc_card_del !== (string)'success'){
-				$error .= $ggpc_card_del;
+		if(((string)$_POST['storeCard'] !== (string)'yes' || (string)$gic_add_card !== (string)'success') and !$_POST['cardissuenum']){
+			$gic_card_del = gic_card_del($_POST['pay_method_id']);
+			if((string)$gic_card_del !== (string)'success'){
+				$error .= $gic_card_del;
 			}
 		}
 	}
 	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] !== (string)'captured'){
 		$error .= $charge['result']['Charge']['Transactions']['0']['statusDescription'];
 		if(!$_POST['cardissuenum']){
-			$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
-			if((string)$ggpc_card_del !== (string)'success'){
-				$error .= $ggpc_card_del;
+			$gic_card_del = gic_card_del($_POST['pay_method_id']);
+			if((string)$gic_card_del !== (string)'success'){
+				$error .= $gic_card_del;
 			}
 		}
 	}
 	if($charge['result']['error']){
 		if(!$_POST['cardissuenum']){
-			$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
-			if((string)$ggpc_card_del !== (string)'success'){
-				$error .= $ggpc_card_del;
+			$gic_card_del = gic_card_del($_POST['pay_method_id']);
+			if((string)$gic_card_del !== (string)'success'){
+				$error .= $gic_card_del;
 			}
 		}
 		$error .= $charge['result']['error']['message'];
@@ -153,9 +153,9 @@ if($_POST and !$_POST['error'] ){
 if($_POST['error']){
 	$error .= $_POST['error'];
 	if(!$_POST['cardissuenum'] and $_POST['pay_method_id']){
-		$ggpc_card_del = ggpc_card_del($_POST['pay_method_id']);
-		if((string)$ggpc_card_del !== (string)'success'){
-			$error .= $ggpc_card_del;
+		$gic_card_del = gic_card_del($_POST['pay_method_id']);
+		if((string)$gic_card_del !== (string)'success'){
+			$error .= $gic_card_del;
 		}
 	}
 }
@@ -170,8 +170,8 @@ if($params['log']){
 	$log_response = [
 		 'charge'=> $charge,
 		 'charge_capture'=>$charge_capture,
-		 'ggpc_add_card'=>$ggpc_add_card,
-		 'ggpc_card_del'=> $ggpc_card_del,
+		 'gic_add_card'=>$gic_add_card,
+		 'gic_card_del'=> $gic_card_del,
 		 'error'=>$error,
 	];
 	if($log['post']['cardnum']){
@@ -201,13 +201,13 @@ if($params['log']){
 	if($log['charge']['result']['charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number']){
 		$log['charge']['result']['charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
 	}
-	logModuleCall('gofasgalaxpaycartao', 'iframe_payment', ['module_version'=>ggpc_version(),'request'=>$log_request],'post',['response'=>$log_response],'replaceVars');
+	logModuleCall('gofasiugucartao', 'iframe_payment', ['module_version'=>gic_version(),'request'=>$log_request],'post',['response'=>$log_response],'replaceVars');
 }
 if(!$error){
-	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
+	$invoice_page =json_encode($gicwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
 if($error){
-	$invoice_page =json_encode($ggpcwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&ggpcerror='.$error);
+	$invoice_page =json_encode($gicwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&gicerror='.$error);
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }

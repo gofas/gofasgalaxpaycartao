@@ -1,8 +1,8 @@
 <?php
 /**
- * Módulo GalaxPay Cartão para WHMCS
+ * Módulo iugu Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14641
+ * @see			https://gofas.net/?p=14946
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
@@ -12,30 +12,30 @@ require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 if(!defined("WHMCS")){die();}
 use WHMCS\Database\Capsule;
-if(!function_exists('ggpc_version')){
-	function ggpc_version($int=false){
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpc_version') -> get( array( 'value','created_at') ) as $ggpc_version_ ){
-			$ggpc_version				= $ggpc_version_->value;
-			$ggpc_version_created_at	= $ggpc_version_->created_at;
+if(!function_exists('gic_version')){
+	function gic_version($int=false){
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gic_version') -> get( array( 'value','created_at') ) as $gic_version_ ){
+			$gic_version				= $gic_version_->value;
+			$gic_version_created_at	= $gic_version_->created_at;
 		}
 		if(!$int){
-			return $ggpc_version;
+			return $gic_version;
 		}
 		if($int){
-			return (int)preg_replace("/[^0-9]/", "", $ggpc_version);
+			return (int)preg_replace("/[^0-9]/", "", $gic_version);
 		}
 	}
 }
-if(!function_exists('ggpc_api_connect')){
-	function ggpc_api_connect(){
-		$params = getGatewayVariables('gofasgalaxpaycartao');
+if(!function_exists('gic_api_connect')){
+	function gic_api_connect(){
+		$params = getGatewayVariables('gofasiugucartao');
 		if($params['sandbox']){
 			$params_api = [
 				'api_mode' => 'sandbox',
 				'galax_id' => $params['sandbox_galax_id'],
 				'galax_hash' => $params['sandbox_galax_hash'],
 				'public_token' => $params['sandbox_public_token'],
-				'charge_url' => 'https://api.sandbox.cloud.galaxpay.com.br/v2',
+				'charge_url' => 'https://api.sandbox.cloud.iugu.com.br/v2',
 				'galaxIdPartner' => '5473',
 				'galaxHashPartner' => '83Mw5u8988Qj6fZqS4Z8K7LzOo1j28S706R0BeFe',
 			];
@@ -46,7 +46,7 @@ if(!function_exists('ggpc_api_connect')){
 				'galax_id' => $params['galax_id'],									// $params_api['galax_id']
 				'galax_hash' => $params['galax_hash'],								// $params_api['galax_hash']
 				'public_token' => $params['public_token'],							// $params_api['public_token']
-				'charge_url' => 'https://api.galaxpay.com.br/v2',					// $params_api['charge_url']												// $params_api['sandbox']
+				'charge_url' => 'https://api.iugu.com.br/v2',					// $params_api['charge_url']												// $params_api['sandbox']
 				'galaxIdPartner' => '29009',										// $params_api['galaxIdPartner']
 				'galaxHashPartner' => 'U9F6YvKgI77gVqJ60kHk6qOd04RhLfN0YyJ8AfA6',	// $params_api['galaxHashPartner']
 			];
@@ -54,9 +54,9 @@ if(!function_exists('ggpc_api_connect')){
 		return $params_api;
 	}
 }
-if( !function_exists('ggpc_get_token') ){
-	function ggpc_get_token(){
-		$params_api = ggpc_api_connect();
+if( !function_exists('gic_get_token') ){
+	function gic_get_token(){
+		$params_api = gic_api_connect();
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => $params_api['charge_url'].'/token',
@@ -83,9 +83,9 @@ if( !function_exists('ggpc_get_token') ){
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-if( !function_exists('ggpc_charge') ){
-	function ggpc_charge($postfields){
-		$params_api = ggpc_api_connect();
+if( !function_exists('gic_charge') ){
+	function gic_charge($postfields){
+		$params_api = gic_api_connect();
     	$curl = curl_init();
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => $params_api['charge_url'].'/charges',
@@ -109,9 +109,9 @@ if( !function_exists('ggpc_charge') ){
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-if( !function_exists('ggpc_refund') ){
-	function ggpc_refund($charge_id,$access_token){
-		$params_api = ggpc_api_connect();
+if( !function_exists('gic_refund') ){
+	function gic_refund($charge_id,$access_token){
+		$params_api = gic_api_connect();
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => $params_api['charge_url'].'/charges/'.$charge_id.'/galaxPayId/reverse',
@@ -135,8 +135,8 @@ if( !function_exists('ggpc_refund') ){
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-if( !function_exists('ggpc_get_string_between') ){
-	function ggpc_get_string_between($string, $start, $end){
+if( !function_exists('gic_get_string_between') ){
+	function gic_get_string_between($string, $start, $end){
 		$string = " ".$string;
 		$ini = strpos($string,$start);
 		if ($ini == 0) return "";
@@ -145,8 +145,8 @@ if( !function_exists('ggpc_get_string_between') ){
 		return substr($string,$ini,$len);
 	}
 }
-if( !function_exists('ggpc_card_add') ){
-	function ggpc_card_add($card,$pay_method_id){
+if( !function_exists('gic_card_add') ){
+	function gic_card_add($card,$pay_method_id){
 		try {
 			Capsule::table('tblcreditcards')->where( 'pay_method_id', $pay_method_id)->delete();
 		}
@@ -162,7 +162,7 @@ if( !function_exists('ggpc_card_add') ){
 		try {
 			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
 				$card['userid'],
-				'gofasgalaxpaycartao',
+				'gofasiugucartao',
 				'111111111111'.$card['cclastfour'],
 				$card['cardexp'],
 				$card['cardtype'],
@@ -175,14 +175,14 @@ if( !function_exists('ggpc_card_add') ){
 			$error .= $e->getMessage();
 		}
 		if($error){
-			ggpc_card_del($card['myId']);
+			gic_card_del($card['myId']);
 			return $error;
 		}
 		return 'success';
 	}
 }
-if( !function_exists('ggpc_card_del') ){
-	function ggpc_card_del($pay_method_id){
+if( !function_exists('gic_card_del') ){
+	function gic_card_del($pay_method_id){
 		try {
 			Capsule::table('tblcreditcards')->where( 'pay_method_id', $pay_method_id)->delete();
 		}
@@ -201,14 +201,14 @@ if( !function_exists('ggpc_card_del') ){
 		return 'success';
 	}
 }
-if( !function_exists('ggpc_add_trans') ){
-	function ggpc_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
+if( !function_exists('gic_add_trans') ){
+	function gic_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
  		$addtransvalues['userid'] = $user_id;
  		$addtransvalues['invoiceid'] = $invoice_id;
  		$addtransvalues['description'] = $description;
  		$addtransvalues['amountin'] = $amount;
  		$addtransvalues['fees'] = $fee;
- 		$addtransvalues['paymentmethod'] = 'gofasgalaxpaycartao';
+ 		$addtransvalues['paymentmethod'] = 'gofasiugucartao';
  		$addtransvalues['transid'] = $charge_id;
  		$addtransvalues['date'] = date('d/m/Y');
 		$addtransresults = localAPI( "addtransaction", $addtransvalues, (int)$params['admin']);
@@ -222,10 +222,10 @@ if( !function_exists('ggpc_add_trans') ){
 	}
 }
 
-if(!function_exists('ggpc_customer') ){
-	function ggpc_customer($client_id){
+if(!function_exists('gic_customer') ){
+	function gic_customer($client_id){
 		//Determine custom fields id
-		$params = getGatewayVariables('gofasgalaxpaycartao');
+		$params = getGatewayVariables('gofasiugucartao');
 		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), $params['admin']);
 		foreach( Capsule::table('tblcustomfields')->where('type','=','client')->get() as $customfield ){
 			$customfield_id = $customfield->id;
@@ -382,8 +382,8 @@ if(!function_exists('ggpc_customer') ){
 	}
 }
 // Admin functions
-if( !function_exists('ggpc_whmcs_url') ){
-	function ggpc_whmcs_url(){
+if( !function_exists('gic_whmcs_url') ){
+	function gic_whmcs_url(){
 		$url		= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 		if( stripos( $url, '/configgateways.php') !== false){
 			$whmcs_url__ = str_replace("\\",'/',(isset($_SERVER['HTTPS']) ? "https://" : "http://").$_SERVER['HTTP_HOST'].substr(getcwd(),strlen($_SERVER['DOCUMENT_ROOT'])));
@@ -391,36 +391,36 @@ if( !function_exists('ggpc_whmcs_url') ){
 			$vtokens = explode('/', $url);
 			$whmcs_admin_path = '/'.$vtokens[sizeof($vtokens)-2].'/';
 			$whmcs_url = str_replace( $whmcs_admin_path, '', $admin_url).'/';
-			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
-				$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
-				$ggpcwhmcsurl_created_at			= $ggpcwhmcsurl_->created_at;
+			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gicwhmcsurl') -> get( array( 'value','created_at') ) as $gicwhmcsurl_ ){
+				$gicwhmcsurl					= $gicwhmcsurl_->value;
+				$gicwhmcsurl_created_at			= $gicwhmcsurl_->created_at;
 			}
-			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsadminurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsadminurl_ ){
-				$ggpcwhmcsadminurl				= $ggpcwhmcsadminurl_->value;
-				$ggpcwhmcsadminurl_created_at	= $ggpcwhmcsurl_->created_at;
+			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gicwhmcsadminurl') -> get( array( 'value','created_at') ) as $gicwhmcsadminurl_ ){
+				$gicwhmcsadminurl				= $gicwhmcsadminurl_->value;
+				$gicwhmcsadminurl_created_at	= $gicwhmcsurl_->created_at;
 			}
-			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsadminpath') -> get( array( 'value','created_at') ) as $ggpcwhmcsadminpath_ ){
-				$ggpcwhmcsadminpath				= $ggpcwhmcsadminpath_->value;
-				$ggpcwhmcsadminpath_created_at	= $ggpcwhmcsurl_->created_at;
+			foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gicwhmcsadminpath') -> get( array( 'value','created_at') ) as $gicwhmcsadminpath_ ){
+				$gicwhmcsadminpath				= $gicwhmcsadminpath_->value;
+				$gicwhmcsadminpath_created_at	= $gicwhmcsurl_->created_at;
 			}
-			if( !$ggpcwhmcsurl ){
-				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsurl', 'value' => $whmcs_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
+			if( !$gicwhmcsurl ){
+				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'gicwhmcsurl', 'value' => $whmcs_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
 				catch (\Exception $e){ $e->getMessage(); }
-				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsadminurl', 'value' => $admin_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
+				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'gicwhmcsadminurl', 'value' => $admin_url, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
 				catch (\Exception $e){ $e->getMessage(); }
-				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'ggpcwhmcsadminpath', 'value' => $whmcs_admin_path, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
+				try { Capsule::table('tblconfiguration')->insert(array('setting' => 'gicwhmcsadminpath', 'value' => $whmcs_admin_path, 'created_at' => date("Y-m-d H:i:s") , 'updated_at' => date("Y-m-d H:i:s")));}
 				catch (\Exception $e){ $e->getMessage(); }
 			}
-			if( $ggpcwhmcsurl and ($whmcs_url !== $ggpcwhmcsurl) ){
-				try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpcwhmcsurl')->update(array('value' => $whmcs_url, 'created_at' =>  $ggpcwhmcsurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
+			if( $gicwhmcsurl and ($whmcs_url !== $gicwhmcsurl) ){
+				try { Capsule::table('tblconfiguration')->where( 'setting', 'gicwhmcsurl')->update(array('value' => $whmcs_url, 'created_at' =>  $gicwhmcsurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
 				catch (\Exception $e){$e->getMessage();}
 			}
-			if( $ggpcwhmcsadminurl and ($admin_url !== $ggpcwhmcsadminurl) ){
-				try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpcwhmcsadminurl')->update(array('value' => $admin_url, 'created_at' =>  $ggpcwhmcsadminurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
+			if( $gicwhmcsadminurl and ($admin_url !== $gicwhmcsadminurl) ){
+				try { Capsule::table('tblconfiguration')->where( 'setting', 'gicwhmcsadminurl')->update(array('value' => $admin_url, 'created_at' =>  $gicwhmcsadminurl_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
 				catch (\Exception $e){$e->getMessage();}
 			}
-			if( $ggpcwhmcsadminpath and ($whmcs_admin_path !== $ggpcwhmcsadminpath) ){
-				try { Capsule::table('tblconfiguration')->where( 'setting', 'ggpcwhmcsadminpath')->update(array('value' => $whmcs_admin_path, 'created_at' =>  $ggpcwhmcsadminpath_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
+			if( $gicwhmcsadminpath and ($whmcs_admin_path !== $gicwhmcsadminpath) ){
+				try { Capsule::table('tblconfiguration')->where( 'setting', 'gicwhmcsadminpath')->update(array('value' => $whmcs_admin_path, 'created_at' =>  $gicwhmcsadminpath_created_at , 'updated_at' => date("Y-m-d H:i:s")));}
 				catch (\Exception $e){$e->getMessage();}
 			}
 
@@ -428,8 +428,8 @@ if( !function_exists('ggpc_whmcs_url') ){
 		return ['url'=>$whmcs_url,'admin_url'=>$admin_url,'admin_path'=>$whmcs_admin_path];
 	}
 }
-if( !function_exists('ggpc_get_embed') ){
-	function ggpc_get_embed($page_id,$referer,$module_version){
+if( !function_exists('gic_get_embed') ){
+	function gic_get_embed($page_id,$referer,$module_version){
 		$query = 'https://gofas.net/cliente/gofas/updates/?embed='.$page_id.'&referer='.$referer.'&version='.$module_version;
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
@@ -442,26 +442,26 @@ if( !function_exists('ggpc_get_embed') ){
 		return ['embed'=>$embed,'http_code'=>$http_status];
 	}
 }
-if(!function_exists('ggpc_encrypt')){
-	function ggpc_encrypt($q) {
+if(!function_exists('gic_encrypt')){
+	function gic_encrypt($q) {
 	    $encryptionMethod = "AES-256-CBC";
 		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
 	    return openssl_encrypt($q, $encryptionMethod, $secretHash);
 	}
 }
-if(!function_exists('ggpc_decrypt')){
-	function ggpc_decrypt($q){
+if(!function_exists('gic_decrypt')){
+	function gic_decrypt($q){
 		$encryptionMethod = "AES-256-CBC";
 		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
 	    return openssl_decrypt($q, $encryptionMethod, $secretHash);
 	}
 }
-if( !function_exists('ggpc_get_version') ){
-	function ggpc_get_version($page_id,$referer,$module_version){
+if( !function_exists('gic_get_version') ){
+	function gic_get_version($page_id,$referer,$module_version){
 		$currentUser = new \WHMCS\Authentication\CurrentUser;
 		$admin_ = json_decode(json_encode($currentUser->admin()),true);
 		$admin = ['email'=>$admin_['email'],'firstname'=>$admin_['firstname'],'lastname'=>$admin_['lastname']];
-		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version.'&email='.$admin['email'].'&firstname='.$admin['firstname'].'&lastname='.$admin['lastname'].ggpc_sysinfo();
+		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version.'&email='.$admin['email'].'&firstname='.$admin['firstname'].'&lastname='.$admin['lastname'].gic_sysinfo();
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
@@ -473,8 +473,8 @@ if( !function_exists('ggpc_get_version') ){
 		return ['version'=>$available_version_,'http_code'=>$http_status];
 	}
 }
-if(!function_exists('ggpc_sysinfo')){
-	function ggpc_sysinfo(){
+if(!function_exists('gic_sysinfo')){
+	function gic_sysinfo(){
 		foreach( Capsule::table('tblconfiguration')
 		->where('setting','=','Version')
 		->get(['value']) as $data1 ){
@@ -488,9 +488,9 @@ if(!function_exists('ggpc_sysinfo')){
 		return '&whmcs_version='.$Version.'&php_version='.$PHPVersion;
 	}
 }
-if(!function_exists('ggpc_verify_module_updates')){
-	function ggpc_verify_module_updates($page_id,$referer,$module_version){
-		foreach( Capsule::table('tblconfiguration')->where('setting','=','ggpc_version')->get(['value','created_at','updated_at']) as $version_ ){
+if(!function_exists('gic_verify_module_updates')){
+	function gic_verify_module_updates($page_id,$referer,$module_version){
+		foreach( Capsule::table('tblconfiguration')->where('setting','=','gic_version')->get(['value','created_at','updated_at']) as $version_ ){
 			$version		= json_decode($version_->value, true);
 			$local_version	= $version['local_version'];
 			$last_version	= $version['last_version'];
@@ -501,8 +501,8 @@ if(!function_exists('ggpc_verify_module_updates')){
 		}
 		///// Get
 		if(!$version){
-			$get_version = ggpc_get_version($page_id,$referer,$module_version);
-			$get_embed	 = ggpc_get_embed($page_id,$referer,$module_version);
+			$get_version = gic_get_version($page_id,$referer,$module_version);
+			$get_embed	 = gic_get_embed($page_id,$referer,$module_version);
 			
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
@@ -512,8 +512,8 @@ if(!function_exists('ggpc_verify_module_updates')){
 			}
 		}
 		if($version and strtotime($updated_at) < strtotime("-1 day")){
-			$get_version = ggpc_get_version($page_id,$referer,$module_version,$admin);
-			$get_embed	 = ggpc_get_embed($page_id,$referer,$module_version);
+			$get_version = gic_get_version($page_id,$referer,$module_version,$admin);
+			$get_embed	 = gic_get_embed($page_id,$referer,$module_version);
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
 			}
@@ -522,8 +522,8 @@ if(!function_exists('ggpc_verify_module_updates')){
 			}
 		}
 		if($version and (string)$module_version !== (string)$local_version){
-			$get_version = ggpc_get_version($page_id,$referer,$module_version,$admin);
-			$get_embed	 = ggpc_get_embed($page_id,$referer,$module_version);
+			$get_version = gic_get_version($page_id,$referer,$module_version,$admin);
+			$get_embed	 = gic_get_embed($page_id,$referer,$module_version);
 			if((int)$get_version['http_code'] !== 200){
 				$error .= $get_version['http_code'].' '.$get_version['version'];
 			}
@@ -538,16 +538,16 @@ if(!function_exists('ggpc_verify_module_updates')){
 		if(!$version and $get_version['version'] and $get_embed['embed']){
 			$local_version = $module_version;
 			$last_version = $get_version['version'];
-			$embed		  = ggpc_encrypt($get_embed['embed']);
+			$embed		  = gic_encrypt($get_embed['embed']);
 			$created_at		= date("Y-m-d H:i:s");
 			$updated_at		= date("Y-m-d H:i:s");
 
 			try { Capsule::table('tblconfiguration')->insert(array(
-				'setting' => 'ggpc_version',
+				'setting' => 'gic_version',
 				'value' => json_encode([
 					'local_version'=>$module_version,
 					'last_version'=>$get_version['version'],
-					'check'=>ggpc_encrypt($get_embed['embed'])
+					'check'=>gic_encrypt($get_embed['embed'])
 				]),
 				'created_at' => $created_at,
 				'updated_at' => $updated_at
@@ -564,11 +564,11 @@ if(!function_exists('ggpc_verify_module_updates')){
 			$last_version !== $available_version
 		)){
 			try {
-				Capsule::table('tblconfiguration')->where('setting','ggpc_version')->update([
+				Capsule::table('tblconfiguration')->where('setting','gic_version')->update([
 					'value' => json_encode([
 						'local_version'=>$module_version,
 						'last_version'=>$available_version,
-						'check'=>ggpc_encrypt($get_embed['embed'])
+						'check'=>gic_encrypt($get_embed['embed'])
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -581,11 +581,11 @@ if(!function_exists('ggpc_verify_module_updates')){
 		// update
 		if($version and $get_version['version'] and $get_embed['embed'] and (string)$local_version !== (string)$module_version){
 			try {
-				Capsule::table('tblconfiguration')->where('setting','ggpc_version')->update([
+				Capsule::table('tblconfiguration')->where('setting','gic_version')->update([
 					'value' => json_encode([
 						'local_version'=>$module_version,
 						'last_version'=>$available_version,
-						'check'=>ggpc_encrypt($get_embed['embed'])
+						'check'=>gic_encrypt($get_embed['embed'])
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -615,35 +615,35 @@ if(!function_exists('ggpc_verify_module_updates')){
 		];
 	}
 }
-if(!function_exists('ggpc_version')){
-	function ggpc_version($opt=1){
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpc_version') -> get( array( 'value','created_at') ) as $ggpc_version_ ){
-			$ggpc_version				= $ggpc_version_->value;
-			$ggpc_version_created_at	= $ggpc_version_->created_at;
+if(!function_exists('gic_version')){
+	function gic_version($opt=1){
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gic_version') -> get( array( 'value','created_at') ) as $gic_version_ ){
+			$gic_version				= $gic_version_->value;
+			$gic_version_created_at	= $gic_version_->created_at;
 		}
 		if($opt=1){ // local_version string
-			$version = json_decode($ggpc_version, true);
+			$version = json_decode($gic_version, true);
 			return $version['local_version'];
 		}
 		if($opt=2){ // local_version integer
-			$version = json_decode($ggpc_version, true);
+			$version = json_decode($gic_version, true);
 			return (int)preg_replace("/[^0-9]/", "", $version['local_version']);
 		}
 		if($opt=3){ // full
-			return$ggpc_version;
+			return$gic_version;
 		}
 	}
 }
-if(!function_exists('ggpc_tbladmins')){
-	function ggpc_tbladmins(){
+if(!function_exists('gic_tbladmins')){
+	function gic_tbladmins(){
 		foreach( Capsule::table('tbladmins') -> get() as $tbladmins_ ){
 			$tbladmins[$tbladmins_->id] = $tbladmins_->id.' - '.$tbladmins_->firstname.' '.$tbladmins_->lastname.' ('.$tbladmins_->username.')';
 		}
 		return $tbladmins;
 	}
 }
-if(!function_exists('ggpc_tblticketdepartments')){
-	function ggpc_tblticketdepartments(){
+if(!function_exists('gic_tblticketdepartments')){
+	function gic_tblticketdepartments(){
 		$tblticketdepartments[] = '';
 		foreach( Capsule::table('tblticketdepartments') -> get() as $tblticketdepartments_ ){
 			$tblticketdepartments_id			= $tblticketdepartments_->id;
