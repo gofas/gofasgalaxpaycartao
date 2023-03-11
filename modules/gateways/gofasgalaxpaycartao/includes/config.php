@@ -1,46 +1,46 @@
 <?php
 /**
- * Módulo iugu Cartão para WHMCS
+ * Módulo GalaxPay Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14946
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.0.0
+ * @version		1.1.0
  */
 
 if( !defined('WHMCS')){ die(''); }
 use WHMCS\Database\Capsule;
-function gofasiugucartao_MetaData(){
+function gofasgalaxpaycartao_MetaData(){
     return array(
-        'DisplayName' => 'Gofas iugu - Cartão',
+        'DisplayName' => 'Gofas GalaxPay - Cartão',
         'APIVersion' => '1.1',
     );
 }
-function gofasiugucartao_config(){
+function gofasgalaxpaycartao_config(){
 	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-		$module_version = '1.0.0';
-		$module_page	= '14946';
+		$module_version = '1.1.0';
+		$module_page	= '14641';
 		require __DIR__.'/functions.php';
-		$whmcs_url = gic_whmcs_url();
-		$check_updates = gic_verify_module_updates($module_page,$whmcs_url['url'],$module_version);
-		$tbladmins = gic_tbladmins();
+		$whmcs_url = ggpc_whmcs_url();
+		$check_updates = ggpc_verify_module_updates($module_page,$whmcs_url['url'],$module_version);
+		$tbladmins = ggpc_tbladmins();
 		$opt_num = 1;
 		$renderize = array(
 			'FriendlyName' => array(
 				'Type' => 'System',
-				'Value' => 'Gofas iugu - Cartão',
+				'Value' => 'Gofas GalaxPay - Cartão',
 			),
 			'separator_1' => array(
 				'Description' => '
-				<div class="gic_separator" style="padding: 1px 15px 9px;">
+				<div class="ggpc_separator" style="padding: 1px 15px 9px;">
 					<div style="float: right; padding: 0px;">
-					'.gic_decrypt($check_updates['check']).'
+					'.ggpc_decrypt($check_updates['check']).'
 					</div>
 					<div style="margin-left: 10px;">
-						<h4 style="padding-top: 5px;">Módulo Gofas iugu - Cartão para WHMCS v'.$module_version.'</h4>
+						<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay - Cartão para WHMCS v'.$module_version.'</h4>
 						'.$check_updates['message'].'
-						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14946#configuration">Documentação do módulo</a>
-						| <a style="text-decoration:underline;" target="_blank" href="https://docs.iugu.com.br/">Documentação da API iugu</a></p>
+						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>
+						| <a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API GalaxPay</a></p>
 						<p>Crie um <a style="text-decoration:underline;" target="_blank" href="'.$whmcs_url['admin_url'].'/configcustomfields.php">campo personalizado de cliente</a> para CPF e/ou CNPJ, ou se preferir, crie dois campos distintos, um campo apenas para CPF e outro campo para CNPJ. O módulo identifica os campos do perfil do cliente automaticamente.</p>
 					</div>
 				</div>',
@@ -50,43 +50,43 @@ function gofasiugucartao_config(){
 			),
 			// Secret Token
 			'galax_id' => array(
-				'FriendlyName' => $opt_num++.'- Galax ID<span class="gic_required">*</span>',
+				'FriendlyName' => $opt_num++.'- Galax ID<span class="ggpc_required">*</span>',
 				'Type' => 'text',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gic_required_txt">(Obrigatório)</span> Galax ID | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.iugu.com.br/suporte">Obter Galax ID</a>',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax ID | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax ID</a>',
 			),
 			'galax_hash' => array(
-				'FriendlyName' => $opt_num++.'- Galax Hash<span class="gic_required">*</span>',
+				'FriendlyName' => $opt_num++.'- Galax Hash<span class="ggpc_required">*</span>',
 				'Type' => 'text',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gic_required_txt">(Obrigatório)</span> Galax Hash | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.iugu.com.br/suporte">Obter Galax Hash</a>',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Produção. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/suporte">Obter Galax Hash</a>',
 			),
 			'separator_3' => array(
 				'Description' => '<h2>Credenciais API - Testes</h2>',
 			),
 			'sandbox_galax_id' => array(
-				'FriendlyName' => $opt_num++.'- Sandbox Galax ID<span class="gic_required">*</span>',
+				'FriendlyName' => $opt_num++.'- Sandbox Galax ID<span class="ggpc_required">*</span>',
 				'Type' => 'text',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gic_required_txt">(Obrigatório)</span> Galax ID | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.iugu.com.br/autenticacao">Obter Galax ID</a>',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax ID | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax ID</a>',
 			),
 			// Sandbox Secret Token
 			'sandbox_galax_hash' => array(
-				'FriendlyName' => $opt_num++.'- Sandbox Galax Hash<span class="gic_required">*</span>',
+				'FriendlyName' => $opt_num++.'- Sandbox Galax Hash<span class="ggpc_required">*</span>',
 				'Type' => 'text',
 				'Size' => '50',
 				'Default' => '',
-				'Description' => '<span class="gic_required_txt">(Obrigatório)</span> Galax Hash | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.iugu.com.br/autenticacao">Obter Galax Hash</a>',
+				'Description' => '<span class="ggpc_required_txt">(Obrigatório)</span> Galax Hash | Testes. <a target="_blank" style="text-decoration:underline;" href="https://docs.galaxpay.com.br/autenticacao">Obter Galax Hash</a>',
 			),
 			// All others settings
 			'separator_4' => array(
 				'Description' => '<h2>Configurações gerais</h2>',
 			),
 			'admin' => array(
-				'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="gic_required">*</span>',
+				'FriendlyName' => $opt_num++.'- Administrador do WHMCS<span class="ggpc_required">*</span>',
 				'Type'          => 'dropdown',
 				'Default' 		=> array_shift(array_values($tbladmins)),
     	        'Options'       => $tbladmins,
@@ -127,7 +127,7 @@ function gofasiugucartao_config(){
 				'FriendlyName' => $opt_num++.'- Permitir parcelamento',
 				'Type' => 'yesno',
 				'Default' => 'yes',
-				'Description' => '<span class="gic_optional_txt">(Opcional)</span> Com essa opção ativada seu cliente verá opções de parcelamento na fatura quando aplicável.',
+				'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Com essa opção ativada seu cliente verá opções de parcelamento na fatura quando aplicável.',
 			),
 			// valor mínimo para parcelamento
 			'minimunamountinstallments' => array(
@@ -135,7 +135,7 @@ function gofasiugucartao_config(){
 				'Type' => 'text',
 				'Size' => '10',
 				'Default' => '1000',
-				'Description' => '<span class="gic_optional_txt">(Opcional)</span> Insira o valor mínimo da fatura para permitir Pagamento Parcelado.',
+				'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Insira o valor mínimo da fatura para permitir Pagamento Parcelado.',
 			),
 			// máximo de parcelas
     	    'maxinstallments' => array(
@@ -155,12 +155,12 @@ function gofasiugucartao_config(){
 					'11' => 'Até 11 parcelas',
 					'12' => 'Até 12 parcelas',
     	        ),
-    	        'Description' => '<span class="gic_optional_txt">(Opcional)</span> Selecione o número máximo de parcelas permitido.</span>',
+    	        'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Selecione o número máximo de parcelas permitido.</span>',
     	    ),
 		);
 		$footer = array('footer' => array(
-				'Description' => '<div class="gic_section">
-				<p>&copy; '.date('Y').' <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net">Gofas.net</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net/?p=14946#changelog">'.$module_version.'</a> | <a  style="text-decoration:underline;"target="_blank" title="↗ Documentação" href="https://gofas.net/?p=14946">Documentação</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Fórum de Suporte" href="https://gofas.net/foruns/">Suporte</a>.</p>
+				'Description' => '<div class="ggpc_section">
+				<p>&copy; '.date('Y').' <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net">Gofas.net</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Gofas.net" href="https://gofas.net/?p=14641#changelog">'.$module_version.'</a> | <a  style="text-decoration:underline;"target="_blank" title="↗ Documentação" href="https://gofas.net/?p=14641">Documentação</a> | <a style="text-decoration:underline;" target="_blank" title="↗ Fórum de Suporte" href="https://gofas.net/foruns/">Suporte</a>.</p>
 				<p style="font-size: 11px;">
 				Ao utilizar esse módulo você concorda com nosso <a style="text-decoration:underline;" target="_blank" title="↗ Contrato de licença de uso de software" href="https://gofas.net/?p=9340">contrato de licença de uso de software</a>.
 				</p>

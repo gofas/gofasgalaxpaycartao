@@ -1,24 +1,24 @@
 <?php
 /**
- * Módulo iugu Cartão para WHMCS
+ * Módulo GalaxPay Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14946
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
-function gofasiugucartao_capture($params){
+function gofasgalaxpaycartao_capture($params){
 	require __DIR__.'/functions.php';
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gicwhmcsurl') -> get( array( 'value','created_at') ) as $gicwhmcsurl_ ){
-		$gicwhmcsurl					= $gicwhmcsurl_->value;
+	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
+		$ggpcwhmcsurl					= $ggpcwhmcsurl_->value;
 	}
 	$Params = json_decode( json_encode($params), true);
 	$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
-	$params_api = gic_api_connect();
-	$access_token_ = gic_get_token();
+	$params_api = ggpc_api_connect();
+	$access_token_ = ggpc_get_token();
 	$access_token = $access_token_['result']['access_token'];
-	$customer = gic_customer($params['clientdetails']['userid']);
+	$customer = ggpc_customer($params['clientdetails']['userid']);
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$params['invoiceid'] ), (int)$params['admin'] );
 	$line_items = array();
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
@@ -32,7 +32,7 @@ function gofasiugucartao_capture($params){
 			'myId'=> $params['invoiceid'].time(),
 			'value' => $amount,
 			'payday'=>date("Y-m-d"),
-			'payedOutsideiugu' => false,
+			'payedOutsideGalaxPay' => false,
 			'mainPaymentMethodId' => "creditcard",
 			'Customer' => [
 				'myId'=> $params['clientdetails']['userid'],
@@ -54,7 +54,7 @@ function gofasiugucartao_capture($params){
     		'qtdInstallments'=> 1
     	],
 	);
-	$charge = gic_charge($postfields);
+	$charge = ggpc_charge($postfields);
 	if( $charge['result']['error']){
 		$error .= $charge['result']['error']['message'];
 		$error .= implode(', ',$charge['result']['error']['details']);
@@ -69,7 +69,7 @@ function gofasiugucartao_capture($params){
 		$fee = (($params['amount'] * $params['fee']) / 100);
 		return array(
             'status' => 'success',
-            'transid' => 'gic-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
+            'transid' => 'ggpc-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
 			'fee' => $fee,
 			'gatewayid' => NULL,
 			'rawdata' => $charge

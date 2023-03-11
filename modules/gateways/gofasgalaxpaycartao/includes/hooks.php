@@ -1,8 +1,8 @@
 <?php
 /**
- * Módulo iugu Cartão para WHMCS
+ * Módulo GalaxPay Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14946
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
@@ -132,12 +132,12 @@ box-shadow: rgba(255,255,255, 0.75) 1.5em 0 0 0, rgba(255,255,255, 0.75) 1.1em 1
 	return;
 });
 add_hook('ClientAreaPageViewInvoice', 1, function($vars){
-	if($_REQUEST['gicerror']){
+	if($_REQUEST['ggpcerror']){
 		echo '
 		<div class="row w-100 mx-auto mb-3" style="max-width: 850px;margin: 15px 0px;">
 			<div class="card w-100">
 				<div class="card-title py-1 px-2 text-white font-weight-bold bg-danger" style="text-align: center;">
-					Erro: '.$_REQUEST['gicerror'].'
+					Erro: '.$_REQUEST['ggpcerror'].'
 				</div>
 				<div class="card-text text-center mx-2 mb-3">
 					'.Lang::trans('invoicepaymentfailedconfirmation').'
@@ -147,9 +147,9 @@ add_hook('ClientAreaPageViewInvoice', 1, function($vars){
 	}
 });
 add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
-	$params = getGatewayVariables('gofasiugucartao');
+	$params = getGatewayVariables('gofasgalaxpaycartao');
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
-		$params = getGatewayVariables('gofasiugucartao');
+		$params = getGatewayVariables('gofasgalaxpaycartao');
 		$vars_ = json_decode(json_encode($vars));
 		//echo '<pre style="height: 250px;">',print_r($vars_),'</pre>';
 		if($params['minimunamountinstallments']){
@@ -188,21 +188,21 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 		else {
 			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
 		}
-		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasiugucartao/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
+		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasgalaxpaycartao/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
 	//echo '<pre style="height: 200px;">',print_r($vars),'</pre>';
 	return array(
 		'allowClientsToRemoveCards'=>false,
-		//'templatefile'=>'../../modules/gateways/gofasiugucartao/templates/invoice-payment',
+		//'templatefile'=>'../../modules/gateways/gofasgalaxpaycartao/templates/invoice-payment',
 	);
 	
 });
 add_hook('ClientAreaPageCart', 1, function($vars){
-	$params = getGatewayVariables('gofasiugucartao');
+	$params = getGatewayVariables('gofasgalaxpaycartao');
 	if( stripos($_SERVER['REQUEST_URI'], 'cart.php?a=checkout')){
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
-		$params = getGatewayVariables('gofasiugucartao');
+		$params = getGatewayVariables('gofasgalaxpaycartao');
 		$vars_ = json_decode(json_encode($vars));
 		if($params['minimunamountinstallments']){
 			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
@@ -239,7 +239,7 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 		else {
 			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
 		}
-		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasiugucartao/assets/js/ClientAreaPageCart.js?v='.time().'"></script>';
+		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofasgalaxpaycartao/assets/js/ClientAreaPageCart.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
 	 }

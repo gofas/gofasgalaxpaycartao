@@ -1,8 +1,8 @@
 <?php
 /**
- * Módulo iugu Cartão para WHMCS
+ * Módulo GalaxPay Cartão para WHMCS
  * @copyright	2022 Gofas Software
- * @see			https://gofas.net/?p=14946
+ * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
  * @version		1.0.0
@@ -14,7 +14,7 @@ if ($params['sandbox']){
     $galax_id = $params['sandbox_galax_id'];
     $galax_hash = $params['sandbox_galax_hash'];
     $public_token = $params['sandbox_public_token'];
-    $charge_url = 'https://api.sandbox.cloud.iugu.com.br/v2';
+    $charge_url = 'https://api.sandbox.cloud.galaxpay.com.br/v2';
    //$referralToken = '34c8f0bb';
 }
 if (!$params['sandbox']){
@@ -22,6 +22,6 @@ if (!$params['sandbox']){
     $galax_id = $params['galax_id'];
     $galax_hash = $params['galax_hash'];
     $public_token = $params['public_token'];
-    $charge_url = 'https://api.iugu.com.br/v2';
+    $charge_url = 'https://api.galaxpay.com.br/v2';
     //$referralToken = '34c8f0bb';
 }
