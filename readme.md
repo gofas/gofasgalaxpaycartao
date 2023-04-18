@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/mauriciogofas/gofasgalaxpaycartao/compare/ccbde09a7dbde354493fb76dfd8e6aa8d6e0bfaa...HEAD)
 
+**Fixed bugs:**
+
+- Corrigido erro "Argument \#1 \($pieces\) must be of type array" iframe.php:147 [\#8](https://github.com/mauriciogofas/gofasgalaxpaycartao/issues/8)
+
 **Closed issues:**
 
 - compatibilidade php8+ [\#5](https://github.com/mauriciogofas/gofasgalaxpaycartao/issues/5)
