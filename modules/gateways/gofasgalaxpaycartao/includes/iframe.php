@@ -143,8 +143,12 @@ if($_POST and !$_POST['error'] ){
 				$error .= $ggpc_card_del;
 			}
 		}
-		$error .= $charge['result']['error']['message'];
-		$error .= implode(', ',$charge['result']['error']['details']);
+		if($charge['result']['error']['message']){
+			$error .= $charge['result']['error']['message'];
+		}
+		if(is_array($charge['result']['error']['details'])){
+			$error .= implode(', ',$charge['result']['error']['details']);
+		}
 	}
 	if($charge['result_code'] !== 200 ){
 		$error .= $charge['result_code'];
