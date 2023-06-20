@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mauriciogofas/gofasgalaxpaycartao/tree/HEAD)
+## [v1.1.2](https://github.com/mauriciogofas/gofasgalaxpaycartao/tree/v1.1.2) (20/06/2023)
 
-[Full Changelog](https://github.com/mauriciogofas/gofasgalaxpaycartao/compare/v1.1.1...HEAD)
+[Full Changelog](https://github.com/mauriciogofas/gofasgalaxpaycartao/compare/v1.1.1...v1.1.2)
 
 **Fixed bugs:**
 
