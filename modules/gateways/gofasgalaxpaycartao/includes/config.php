@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.1.1
+ * @version		1.1.2
  */
 
 if( !defined('WHMCS')){ die(''); }
@@ -18,7 +18,7 @@ function gofasgalaxpaycartao_MetaData(){
 }
 function gofasgalaxpaycartao_config(){
 	if(stripos($_SERVER['REQUEST_URI'], '/configgateways.php')!==false){
-		$module_version = '1.1.1';
+		$module_version = '1.1.2';
 		$module_page	= '14641';
 		require __DIR__.'/functions.php';
 		$whmcs_url = ggpc_whmcs_url();
@@ -168,6 +168,8 @@ function gofasgalaxpaycartao_config(){
 				</div>',
 			),
 		);
+		if(is_array($renderize) and is_array($footer)) {
+			return array_merge($renderize,$footer);
+		}
 	}
-	return array_merge($renderize,$footer);
 }
