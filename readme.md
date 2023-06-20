@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mauriciogofas/gofasgalaxpaycartao/tree/HEAD)
+
+[Full Changelog](https://github.com/mauriciogofas/gofasgalaxpaycartao/compare/v1.1.1...HEAD)
+
+**Fixed bugs:**
+
+- Corrigido o erro array\_merge\(\): Argument \#1 must be of type array, null given in /gofasgalaxpaycartao/includes/config.php:172 [\#9](https://github.com/mauriciogofas/gofasgalaxpaycartao/issues/9)
+
 ## [v1.1.1](https://github.com/mauriciogofas/gofasgalaxpaycartao/tree/v1.1.1) (20/05/2023)
 
 [Full Changelog](https://github.com/mauriciogofas/gofasgalaxpaycartao/compare/ccbde09a7dbde354493fb76dfd8e6aa8d6e0bfaa...v1.1.1)
