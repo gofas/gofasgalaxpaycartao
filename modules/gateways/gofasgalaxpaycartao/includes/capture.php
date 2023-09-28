@@ -8,6 +8,7 @@
  * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
+if(!function_exists('gofasgalaxpaycartao_capture')){
 function gofasgalaxpaycartao_capture($params){
 	require __DIR__.'/functions.php';
 	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'ggpcwhmcsurl') -> get( array( 'value','created_at') ) as $ggpcwhmcsurl_ ){
@@ -88,4 +89,4 @@ function gofasgalaxpaycartao_capture($params){
                 'rawdata' => $charge,
          );
 	}
-}
+}}

@@ -8,6 +8,7 @@
  * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
+if(!function_exists('gofasgalaxpaycartao_refund')){
 function gofasgalaxpaycartao_refund($params){
 	require_once __DIR__.'/functions.php';
 	$params_api = ggpc_api_connect();
@@ -43,4 +44,4 @@ function gofasgalaxpaycartao_refund($params){
 			'fee' => $fee,
     	);
 	}
-}
+}}

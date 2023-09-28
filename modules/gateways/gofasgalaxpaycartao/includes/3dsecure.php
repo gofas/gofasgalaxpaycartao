@@ -8,6 +8,7 @@
  * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
+if(!function_exists('gofasgalaxpaycartao_3dsecure')){
 function gofasgalaxpaycartao_3dsecure($params){
 	define('CLIENTAREA', true);
 	require __DIR__.'/functions.php';
@@ -91,4 +92,5 @@ function gofasgalaxpaycartao_3dsecure($params){
     	$htmlOutput .= '</form>';
 		return $htmlOutput;
 	}	
+}
 }
