@@ -12,7 +12,7 @@ if( !defined('WHMCS')){ die(''); }
 use WHMCS\Database\Capsule;
 function gofasgalaxpaycartao_MetaData(){
     return array(
-        'DisplayName' => 'Gofas GalaxPay - Cartão',
+        'DisplayName' => 'Gofas GalaxPay Cartão',
         'APIVersion' => '1.1',
     );
 }
@@ -28,7 +28,7 @@ function gofasgalaxpaycartao_config(){
 		$renderize = array(
 			'FriendlyName' => array(
 				'Type' => 'System',
-				'Value' => 'Gofas GalaxPay - Cartão',
+				'Value' => 'Gofas GalaxPay Cartão',
 			),
 			'separator_1' => array(
 				'Description' => '
@@ -37,7 +37,7 @@ function gofasgalaxpaycartao_config(){
 					'.ggpc_decrypt($check_updates['check']).'
 					</div>
 					<div style="margin-left: 10px;">
-						<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay - Cartão para WHMCS v'.$module_version.'</h4>
+						<h4 style="padding-top: 5px;">Módulo Gofas GalaxPay Cartão para WHMCS v'.$module_version.'</h4>
 						'.$check_updates['message'].'
 						<p><a style="text-decoration:underline;" target="_blank" href="https://gofas.net/?p=14641#configuration">Documentação do módulo</a>
 						| <a style="text-decoration:underline;" target="_blank" href="https://docs.galaxpay.com.br/">Documentação da API GalaxPay</a></p>
