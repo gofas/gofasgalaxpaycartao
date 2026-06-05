@@ -1,23 +1,12 @@
-# Gofas GalaxPay Cartão
+# Changelog
 
-Módulo de gateway de pagamento para WHMCS que integra cobranças via cartão de crédito pela API GalaxPay. Desenvolvido pela Gofas Software.
+## [Unreleased](https://github.com/mauriciogofas/gofasgalaxpaycartao/tree/HEAD)
 
-## Funcionalidades
+## [v1.1.2] - 2023-06-20
 
-- Pagamento com cartão de crédito via GalaxPay
-- Tokenização e parcelamento configurável
 
-## Requisitos
 
-- WHMCS 7.x ou superior
-- PHP 8.x
-- Conta GalaxPay com cartão habilitado (Galaxy ID e Hash)
+## [v1.1.1] - 2023-05-20
 
-## Instalação
 
-1. Copiar `modules/gateways/` para o `modules/gateways/` do WHMCS
-2. Ativar e informar credenciais
 
-## Changelog
-
-Ver [changelog.md](changelog.md).
