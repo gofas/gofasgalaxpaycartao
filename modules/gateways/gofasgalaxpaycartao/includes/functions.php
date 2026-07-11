@@ -201,6 +201,60 @@ if( !function_exists('ggpc_card_del') ){
 		return 'success';
 	}
 }
+if(!function_exists('ggpc_setup_admin')){
+	function ggpc_setup_admin(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','ggpc_version')->get(['value']) as $version_ ){
+		$version		= json_decode($version_->value, true);
+		$admin			= $version['admin'];
+	}
+	return $admin;
+}}
+if(!function_exists('ggpc_get_local_version')){
+	function ggpc_get_local_version(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','ggpc_version')->get(['value']) as $version_ ){
+		$version		= json_decode($version_->value, true);
+		$local_version			= $version['local_version'];
+	}
+	return $local_version;
+}}
+if(!function_exists('ggpc_update_stats') ){
+	function ggpc_module_version(){
+		return '1.1.2';
+	}
+	function ggpc_update_stats(){
+		$params = getGatewayVariables('gofasgalaxpaycartao');
+		if($params['sandbox']){
+			return;
+		}
+		if(empty($params['consent_stats'])){
+			$anon_version = ggpc_module_version();
+			$anon_id = 'ggpc-v'.$anon_version;
+			$install_url = $anon_id;
+			$installer_email = $anon_id.'@gofas.net';
+			$installer_firstname = 'ggpc';
+			$installer_lastname = 'v'.$anon_version;
+		}
+		else{
+			$whmcs_url = ggpc_whmcs_url();
+			$setup_admin = ggpc_setup_admin();
+			$install_url = $whmcs_url['admin_url'];
+			$installer_email = $setup_admin['email'];
+			$installer_firstname = $setup_admin['firstname'];
+			$installer_lastname = $setup_admin['lastname'];
+		}
+		$query = '?software_id=14641&install_url='.$install_url.'&current_version='.ggpc_get_local_version().'&installer_email='.$installer_email.'&installer_firstname='.$installer_firstname.'&installer_lastname='.$installer_lastname.'&action=charge'.ggpc_sysinfo();
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
+		$response = curl_exec($curl);
+		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		$return = ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+		return $return;
+	}
+}
 if( !function_exists('ggpc_add_trans') ){
 	function ggpc_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
  		$addtransvalues['userid'] = $user_id;
@@ -212,6 +266,7 @@ if( !function_exists('ggpc_add_trans') ){
  		$addtransvalues['transid'] = $charge_id;
  		$addtransvalues['date'] = date('d/m/Y');
 		$addtransresults = localAPI( "addtransaction", $addtransvalues, (int)$params['admin']);
+		$ggpc_update_stats = ggpc_update_stats();
 		if( $addtransresults['result'] === 'success'){
 			return array('values'=>$addtransvalues, 'result'=>$addtransresults);
 		}
@@ -457,16 +512,19 @@ if(!function_exists('ggpc_decrypt')){
 	}
 }
 if( !function_exists('ggpc_get_version') ){
-	function ggpc_get_version($page_id,$referer,$module_version){
+	function ggpc_current_admin(){
 		$currentUser = new \WHMCS\Authentication\CurrentUser;
-		$admin_ = json_decode(json_encode($currentUser->admin()),true);
-		$admin = ['email'=>$admin_['email'],'firstname'=>$admin_['firstname'],'lastname'=>$admin_['lastname']];
-		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version.'&email='.$admin['email'].'&firstname='.$admin['firstname'].'&lastname='.$admin['lastname'].ggpc_sysinfo();
+		$admin = json_decode(json_encode($currentUser->admin()),true);
+		return $admin;
+	}
+	function ggpc_get_version($page_id,$referer,$module_version){
+		$current_admin = ggpc_current_admin();
+		$query = '?software_id='.$page_id.'&install_url='.$referer.'&current_version='.$module_version.'&installer_email='.$current_admin['email'].'&installer_firstname='.$current_admin['firstname'].'&installer_lastname='.$current_admin['lastname'].'&action=verify'.ggpc_sysinfo();
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-		curl_setopt($curl, CURLOPT_URL, $query);
+		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
 		$available_version_ = curl_exec($curl);
 		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
@@ -547,7 +605,8 @@ if(!function_exists('ggpc_verify_module_updates')){
 				'value' => json_encode([
 					'local_version'=>$module_version,
 					'last_version'=>$get_version['version'],
-					'check'=>ggpc_encrypt($get_embed['embed'])
+					'check'=>ggpc_encrypt($get_embed['embed']),
+					'admin'=>ggpc_current_admin(),
 				]),
 				'created_at' => $created_at,
 				'updated_at' => $updated_at
@@ -568,7 +627,8 @@ if(!function_exists('ggpc_verify_module_updates')){
 					'value' => json_encode([
 						'local_version'=>$module_version,
 						'last_version'=>$available_version,
-						'check'=>ggpc_encrypt($get_embed['embed'])
+						'check'=>ggpc_encrypt($get_embed['embed']),
+						'admin'=>ggpc_current_admin(),
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]
@@ -585,7 +645,8 @@ if(!function_exists('ggpc_verify_module_updates')){
 					'value' => json_encode([
 						'local_version'=>$module_version,
 						'last_version'=>$available_version,
-						'check'=>ggpc_encrypt($get_embed['embed'])
+						'check'=>ggpc_encrypt($get_embed['embed']),
+						'admin'=>ggpc_current_admin(),
 					]),
 					'created_at' =>  $created_at,
 					'updated_at' => date("Y-m-d H:i:s")]

@@ -157,6 +157,13 @@ function gofasgalaxpaycartao_config(){
     	        ),
     	        'Description' => '<span class="ggpc_optional_txt">(Opcional)</span> Selecione o número máximo de parcelas permitido.</span>',
     	    ),
+			// Consentimento opt-in para envio de estatisticas de uso (action=charge)
+			'consent_stats' => array(
+				'FriendlyName' => $opt_num++.'- Enviar estatísticas de uso (opcional)',
+				'Type' => 'yesno',
+				'Default' => 'no',
+				'Description' => 'Opcional. Controla o envio identificado das estatísticas de confirmação de pagamento via cartão. Marcado: as confirmações são enviadas à Gofas identificadas pela URL do WHMCS, versão do módulo, versão do WHMCS, versão do PHP, email e nome do administrador. Desmarcado: as confirmações de pagamento continuam sendo contabilizadas, porém de forma anônima, sem URL nem identificação do administrador. Em ambos os casos, a verificação de novas versões do módulo envia a URL do WHMCS e o contato do administrador para notificar atualizações e contabilizar a instalação como ativa.',
+			),
 		);
 		$footer = array('footer' => array(
 				'Description' => '<div class="ggpc_section">
