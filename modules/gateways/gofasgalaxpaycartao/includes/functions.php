@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=14641
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=14644
- * @version		1.0.0
+ * @version		1.2.0
  */
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
@@ -219,7 +219,7 @@ if(!function_exists('ggpc_get_local_version')){
 }}
 if(!function_exists('ggpc_update_stats') ){
 	function ggpc_module_version(){
-		return '1.1.2';
+		return '1.2.0';
 	}
 	function ggpc_update_stats(){
 		$params = getGatewayVariables('gofasgalaxpaycartao');
