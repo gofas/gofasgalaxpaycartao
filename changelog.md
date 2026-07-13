@@ -1,5 +1,14 @@
 # Changelog
 
+## [Próxima atualização](https://github.com/gofas/gofasgalaxpaycartao/tree/HEAD)
+
+
+**Melhorias:**
+
+- readme: conteudo da pagina do site transferido e captura de configuracao - [#11](https://github.com/gofas/gofasgalaxpaycartao/issues/11)
+
+[Comparar versões](https://github.com/gofas/gofasgalaxpaycartao/compare/v1.2.0...HEAD)
+
 ## [v1.2.0 - 12/07/2026](https://github.com/gofas/gofasgalaxpaycartao/releases/tag/v1.2.0)
 
 
