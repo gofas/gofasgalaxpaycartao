@@ -1,6 +1,6 @@
-# Módulo GalaxPay Cartão para WHMCS
+# Módulo cel_cash Cartão para WHMCS
 
-Módulo gratuito de integração que permite receber pagamentos com cartão de crédito no WHMCS através da API GalaxPay, com parcelamento configurável e confirmação automática das faturas. Desenvolvido pela Gofas Software.
+Módulo gratuito de integração que permite receber pagamentos com cartão de crédito no WHMCS através da API cel_cash, com parcelamento configurável e confirmação automática das faturas. Desenvolvido pela Gofas Software.
 
 ## Download
 
@@ -24,7 +24,7 @@ https://github.com/gofas/gofasgalaxpaycartao/releases/latest/download/gofasgalax
 
 - WHMCS >= 8.0
 - PHP >= 7.3
-- Conta GalaxPay com o módulo Webservice ativo
+- Conta cel_cash com o módulo Webservice ativo
 - Credenciais: Galax ID e Galax Hash (produção e testes)
 
 ## Instalação
@@ -36,7 +36,7 @@ https://github.com/gofas/gofasgalaxpaycartao/releases/latest/download/gofasgalax
 
 ## Configuração
 
-### Pré configuração na GalaxPay
+### Pré configuração na cel_cash
 
 1. No painel administrativo, em `Módulos`, ative o módulo Webservice.
 2. Em `Módulos > Webservice > Configurar`, copie as credenciais Galax ID e Galax Hash de produção.
@@ -64,7 +64,7 @@ Crie um campo personalizado de cliente para CPF e/ou CNPJ, ou dois campos distin
 
 ## Informações importantes
 
-- A tarifa do cartão é paga separadamente à GalaxPay, conforme o plano da sua conta.
+- A tarifa do cartão é paga separadamente à cel_cash, conforme o plano da sua conta.
 - Sempre faça backup antes de mudar algo no seu sistema.
 
 ## Suporte
