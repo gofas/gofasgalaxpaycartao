@@ -5,6 +5,7 @@
 
 **Melhorias:**
 
+- readme: link de suporte para o forum do proprio modulo - [#15](https://github.com/gofas/gofasgalaxpaycartao/issues/15)
 - readme: contador do site, captura sem aviso de hook e secao de licenca - [#14](https://github.com/gofas/gofasgalaxpaycartao/issues/14)
 - readme: captura versionada, badges e sumario - [#13](https://github.com/gofas/gofasgalaxpaycartao/issues/13)
 - readme: marca correta e cel_cash (GalaxPay e a marca antiga) - [#12](https://github.com/gofas/gofasgalaxpaycartao/issues/12)
